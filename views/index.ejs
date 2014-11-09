@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tripster | <%=title %></title>
     <link rel="stylesheet" href="/stylesheets/foundation.css" />
-    <link rel="stylesheet" href="/stylesheets/app.css" />
+    <link rel="stylesheet" href="/stylesheets/frontpage.css" />
     <script src="javascripts/vendor/modernizr.js"></script>
   </head>
   <body>
@@ -23,7 +23,6 @@
     	</nav>
     </div>
 	-->
-
     <div class="row">
     	<div class="frontpage">
       		<div class="large-12 columns">
@@ -37,50 +36,135 @@
     <div class="row">
     	<div class="large-12 columns">
     		<div class="tagline">
-    			<h3>the new way to meet people with similar travel interests and explore the world</h3>
+    			<h3>The new way to meet people with similar travel interests and explore the world</h3>
     		</div>
     	</div>
     </div>
 
     <br />
-    <br />
+    <% if(error == "true")  { %>
+      <div class="row">
+        <div class="large-12 columns">
+          <div class="error">
+            <p>Error: The username or password does not exist :(</p>
+          </div>
+        </div>
+      </div>
+    <% } %>
+    <% if(error == "false")  { %>
+      <br />
+    <% } %>
 
-	<div class="row">
-		<div class="frontpage">
-  			<div class="large-4 columns">.</div>
-  			<div class="large-4 columns">
-  				<a href="#" data-reveal-id="login" class="radius button">login</a>
-				<a href="#" data-reveal-id="signup" class="radius button">sign up</a></a>
-			</div>
-  			<div class="large-4 columns">.</div>
-  		</div>
-	</div>
+  	<div class="row">
+  		<div class="frontpage">
+    			<div class="large-4 columns">.</div>
+    			<div class="large-4 columns">
+    				<a href="#" data-reveal-id="login" class="radius button">Login</a>
+  				<a href="#" data-reveal-id="signup" class="radius button">Sign up</a></a>
+  			</div>
+    			<div class="large-4 columns">.</div>
+    		</div>
+  	</div>
 
-	<div id="login" class="reveal-modal" data-reveal>
-    	<h2>Awesome. I have it.</h2>
-  		<p class="lead">Your couch.  It is mine.</p>
-  		<p>I'm a cool paragraph that lives inside of an even cooler modal. Wins!</p>
-  		<a class="close-reveal-modal">&#215;</a>
-	</div>
+  	<div id="login" class="reveal-modal" data-reveal>
+  		<form action="/login" method="post" name="login" data-parsley-validate>
+    			<div class="row">
+  		    	<div class="small-12 columns">
+  		      		<div class="row">
+  		        		<div class="small-3 columns">
+  		          			<label align="left" for="username" class="right inline">Username</label>
+  		        		</div>
+  		        		<div class="small-9 columns">
+  		          			<input type="text" name="username" placeholder="example@abc.com" data-parsley-type="email" data-parsley-required="true" data-parsley-trigger="change">
+  		        		</div>
+  		      		</div>
+  		      		<div class="row">
+  		        		<div class="small-3 columns">
+  		          			<label align="left" for="password" class="right inline">Password</label>
+  		        		</div>
+  		        		<div class="small-9 columns">
+  		          			<input type="password" name="password" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;" data-parsley-required="true" data-parsley-trigger="change" data-parsley-minlength="8">
+  		        		</div>
+  		        		<p align="right" style="font-size: 12px; padding-right: 5%"><a href="#">Forgot password?</a></p>
+  		      		</div>
+  		    	</div>
+  		  	</div>
+          <div class = "row">
+            <div align="center" class="small-12 columns">
+              <input type="submit" value="Log In" class="radius button">      
+            </div>
+          </div>
+  		</form>
+    		
 
-	<div id="signup" class="reveal-modal" data-reveal>
-    	<h2>Awesome. I have it.</h2>
-  		<p class="lead">Your couch.  It is mine.</p>
-  		<p>I'm a cool paragraph that lives inside of an even cooler modal. Wins!</p>
-  		<a class="close-reveal-modal">&#215;</a>
-	</div>
+    		
+  		<!--<div class = "row">
+  			<div align="center" class="small-12 columns">
+    				<a class="close-reveal-modal">
+    					<a href="#" data-reveal-id="login" class="radius button">Cancel</a>
+    				</a>
+    			</div>
+    		</div>-->
+
+  	</div>
+
+  	<div id="signup" class="reveal-modal" data-reveal>
+      <form action="/signup" method="post" name="login" data-parsley-validate>
+        <div class="row">
+          <div class="small-12 columns">
+            <div class="row">
+              <div class="small-3 columns">
+                  <label align="left" for="username" class="right inline">Username</label>
+              </div>
+              <div class="small-9 columns">
+                  <input type="text" name="username" placeholder="example@abc.com" data-parsley-type="email" data-parsley-required="true" data-parsley-trigger="change">
+              </div>
+            </div>
+            <div class="row">
+              <div class="small-3 columns">
+                <label align="left" for="password" class="right inline">Password</label>
+              </div>
+              <div class="small-9 columns">
+                <input type="password" name="password" placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;" data-parsley-required="true" data-parsley-trigger="change" data-parsley-minlength="8">
+              </div>
+            </div>
+            <div class="row">
+              <div class="small-3 columns">
+                  <label align="left" for="firstname" class="right inline">First Name</label>
+              </div>
+              <div class="small-9 columns">
+                  <input type="text" name="firstname" placeholder="Christian" data-parsley-type="alphanum" data-parsley-required="true" data-parsley-trigger="change">
+              </div>
+            </div>
+            <div class="row">
+              <div class="small-3 columns">
+                <label align="left" for="firstname" class="right inline">Last Name</label>
+              </div>
+              <div class="small-9 columns">
+                  <input type="text" name="firstname" placeholder="Bale" data-parsley-type="alphanum" data-parsley-required="true" data-parsley-trigger="change">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class = "row">
+          <div align="center" class="small-12 columns">
+            <input type="submit" value="Sign up" class="radius button">      
+          </div>
+        </div>
+      </form>
+  	</div>
 
     <footer>
-        built by rohit, rishabh, avinash and sibi at penn
+        Built by Rohit, Rishabh, Avinash and Sibi at Penn
     </footer>
     
     <script src="/javascripts/vendor/jquery.js"></script>
     <script src="/javascripts/foundation.min.js"></script>
     <script src="/javascripts/foundation/foundation.reveal.js"></script>
+    <script src="javascripts/parsley.min.js"></script>
     <script>
       $(document).foundation();
     </script>
-
 
   </body>
 </html>

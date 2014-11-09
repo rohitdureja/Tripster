@@ -55,6 +55,16 @@ img.bg {
   width: 75%;
 }
 
+.row .large-12 .error p {
+  margin-left: 12%;
+  text-align: center;
+  color: red;
+  font-size: 15px;
+  //-webkit-text-stroke-width: 0.5px;
+  //-webkit-text-stroke-color: #66CC99;
+  width: 75%;
+}
+
 html {
     position: relative;
     min-height: 100%;
@@ -83,7 +93,7 @@ button, .button {
   width:45%;
 }
 
-button.radius, .button.radius {
+button .radius, .button.radius {
   border-radius: 10px; 
 }
 
@@ -93,4 +103,21 @@ button:hover, button:focus, .button:hover, .button:focus {
 
 button:hover, button:focus, .button:hover, .button:focus {
   color: #FFFF00; 
+}
+
+
+.reveal-modal,dialog {
+  /* modal dialog box */
+  background-color: #D1F7BE;
+  border-radius: 10px;
+  width: 30%;
+  padding-top: 50px;
+}
+
+.reveal-modal h2 {
+  color: #215706;
+}
+
+.row .small-3 label{
+  color: #215706;
 }
