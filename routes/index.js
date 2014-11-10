@@ -3,7 +3,27 @@ var router = express.Router();
 var passport = require('passport');
 var stormpath = require('stormpath');
 
-var error = '';
+// Set up oracle
+var oracle = require('oracle');
+var conn;
+var connectData = {
+    hostname: "tripster.cx4nlyh3nrji.us-west-2.rds.amazonaws.com",
+    port: 1521,
+    database: "ORCL",
+    user: "tripsteradmin",
+    password: "adminRS1!" 
+}
+oracle.connect(connectData, function(err, connection) {
+	if(err) {
+		console.log("Error connecting to db: ", err);
+	    return;
+	}
+	console.log('connected');
+	conn=connection;
+});
+
+var error = '';	// variable for error messages.
+var query = ''; // variable to form sql queries.
 /* GET home page. */
 router.get('/', function(req, res) {
   res.render('index', { title: 'Welcome', error: error, user: req.user });
@@ -50,6 +70,16 @@ router.post('/signup', function(req, res) {
 				return res.render('index', {title: 'Welcome', error: 'Error: ' + err.userMessage});
 			}
 			else {
+				// Add new user to our SQL database.
+				query = "insert into users values ('"+username+"','"+firstname+"','"+lastname+"')";
+				console.log(query);
+				conn.execute(query, [], function(err, results) {
+					if(err) {
+						console.log('Error executing query: ', err);
+						res.send('There was aproblem querying the databases');
+						return;
+					}
+				});
 				passport.authenticate('stormpath')(req, res, function() {
 					return res.redirect('/home');
 				});
@@ -72,17 +102,16 @@ router.post('/login',
 
 // Log out from session
 router.get('/logout', function(req, res) {
-	error = 'Error: ' + req.user.givenName + ' you are now signed out.'
-	req.logout();
-	res.redirect('/');
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	else {
+		error = req.user.givenName + ' you are now signed out. We miss you already, come back soon!'
+		req.logout();
+		res.redirect('/');
+	}
 });
-/*router.post('/login', function(req, res) {
-	var error = "true";
-	var username = req.body.username;
-	if(error=="false")
-		res.render('index', { title: 'Welcome', error: error });
-	else
-		res.render('home', {title: username});
-});*/
+
 
 module.exports = router;
