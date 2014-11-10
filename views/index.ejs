@@ -42,16 +42,16 @@
     </div>
 
     <br />
-    <% if(error == "true")  { %>
+    <% if(error!='')  { %>
       <div class="row">
         <div class="large-12 columns">
           <div class="error">
-            <p>Error: The username or password does not exist :(</p>
+            <p><%= error %></p>
           </div>
         </div>
       </div>
     <% } %>
-    <% if(error == "false")  { %>
+    <% if(error == '')  { %>
       <br />
     <% } %>
 
@@ -138,10 +138,10 @@
             </div>
             <div class="row">
               <div class="small-3 columns">
-                <label align="left" for="firstname" class="right inline">Last Name</label>
+                <label align="left" for="lastname" class="right inline">Last Name</label>
               </div>
               <div class="small-9 columns">
-                  <input type="text" name="firstname" placeholder="Bale" data-parsley-type="alphanum" data-parsley-required="true" data-parsley-trigger="change">
+                  <input type="text" name="lastname" placeholder="Bale" data-parsley-type="alphanum" data-parsley-required="true" data-parsley-trigger="change">
               </div>
             </div>
           </div>
