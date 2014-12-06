@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tripster | <%=title %></title>
     <link rel="stylesheet" href="/stylesheets/foundation.css" />
-    <link rel="stylesheet" href="/stylesheets/frontpage.css" />
+    <link rel="stylesheet" href="/stylesheets/homepage.css" />
     <script src="javascripts/vendor/modernizr.js"></script>
   </head>
   <body>
@@ -16,12 +16,28 @@
             <h1><a href="http://localhost:3000"><img src="/images/tripster_logo.png" /></a></h1>
           </li>
         </ul>
+        <section class="top-bar-section">
+          <ul class="right">
+            <li><a href="\logout">Logout</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\requests">Requests</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\profile"><%= user.givenName%></a></li>
+          </ul>
+          <ul class="right">
+            <li class="active"><a href="\home">Home</a></li>
+          </ul>
+          <ul class="right">
+            <li class="\search"><a href="\search"><img src="/images/search.png" /></a></li>
+          </ul>
+        </section>
       </nav>
     </div>
 
-    <footer>
-        Built by Rohit, Rishabh, Avinash and Sibi at Penn
-    </footer>
+    <h1> Welcome <%= user.givenName %> <%=user.surname %> <%=user.id %></h1>
+    
     
     <script src="/javascripts/vendor/jquery.js"></script>
     <script src="/javascripts/foundation.min.js"></script>
@@ -30,6 +46,5 @@
     <script>
       $(document).foundation();
     </script>
-
   </body>
 </html>
