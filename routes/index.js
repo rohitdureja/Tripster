@@ -90,7 +90,7 @@ router.post('/signup', function(req, res) {
 			}
 			else {
 				// Add new user to our SQL database.
-				query = "insert into users values (userid_seq.nextval, '"+username+"','"+firstname+"','"+lastname+"')";
+				query = "insert into users values (userid_seq.nextval, '"+username+"','"+firstname+"','"+lastname+"','"+username+"')";
 				console.log(query);
 				conn.execute(query, [], function(err, results) {
 					if(err) {
@@ -135,14 +135,20 @@ router.get('/logout', function(req, res) {
 
 // Search box
 router.get('/search', function(req, res) {
-
+	res.render('search', {title: 'Search', user:req.user});
 });
+
+// Search results
+router.post('/search', function(req, res) {
+	console.log(req.body.searchquery);
+})
 
 // User profile
 router.get('/profile', function(req, res) {
 
 });
 
+/*
 // Populate stormapth
 router.get('/populate', function(req, res) {
 	var query = "select * from users";
@@ -209,5 +215,6 @@ router.get('/populate', function(req, res) {
 		}
 	});	
 });
+*/
 
 module.exports = router;
