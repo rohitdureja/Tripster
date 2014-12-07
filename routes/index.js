@@ -25,6 +25,8 @@ oracle.connect(connectData, function(err, connection) {
 var error = '';	// variable for error messages.
 var query = ''; // variable to form sql queries.
 
+var userid;
+
 /* GET home page. */
 router.get('/', function(req, res) {
   // If user is logged in
@@ -52,6 +54,7 @@ router.get('/home', function(req, res) {
 			return;
 		}
 		req.user.id = results[0].ID;
+		userid = results[0].ID;
 		console.log(req.user.id);
 		res.render('home', {title: 'Home', user: req.user});
 	});
@@ -90,7 +93,7 @@ router.post('/signup', function(req, res) {
 			}
 			else {
 				// Add new user to our SQL database.
-				query = "insert into users values (userid_seq.nextval, '"+username+"','"+firstname+"','"+lastname+"')";
+				query = "insert into users values (userid_seq.nextval, '"+username+"','"+firstname+"','"+lastname+"','"+username+"')";
 				console.log(query);
 				conn.execute(query, [], function(err, results) {
 					if(err) {
@@ -135,7 +138,96 @@ router.get('/logout', function(req, res) {
 
 // Search box
 router.get('/search', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	res.render('search', {title: 'Search', user:req.user, users: '', trips: ''});
+});
 
+// Search results
+router.post('/search', function(req, res) {
+	var search_string = req.body.searchquery;
+	console.log(search_string);
+	var users;
+	var trips;
+	console.log(userid);
+	//query = "SELECT U.USERNAME, U.FIRST_NAME, U.LAST_NAME, U.EMAIL FROM USERS U WHERE U.EMAIL LIKE '\%"+search_string+"\%' OR U.USERNAME LIKE '\%"+search_string+"\%' OR U.FIRST_NAME LIKE '\%"+search_string+"\%'";
+	query = "WITH SEARCHED_USER AS ( \
+SELECT U.ID \
+FROM USERS U \
+WHERE (U.EMAIL LIKE '%"+search_string+"%' OR \
+U.USERNAME LIKE '%"+search_string+"%' OR \
+U.FIRST_NAME LIKE '%"+search_string+"%')), \
+CURRENT_USERS_FRIENDS AS ( \
+SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, F.STATUS AS STATUS \
+FROM FRIENDS F, USERS U \
+INNER JOIN SEARCHED_USER SU \
+ON SU.ID = U.ID \
+WHERE (F.USER_ID1 = U.ID AND F.USER_ID2 = "+userid+") \
+OR (F.USER_ID2 = U.ID AND F.USER_ID1 = "+userid+")), \
+CURRENT_USERS_NON_FRIENDS AS ( \
+SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, 'Not A Friend' AS STATUS \
+FROM SEARCHED_USER SU \
+INNER JOIN USERS U \
+ON SU.ID = U.ID \
+WHERE SU.ID NOT IN( \
+SELECT CUF.ID \
+FROM CURRENT_USERS_FRIENDS CUF \
+) \
+) \
+SELECT * FROM CURRENT_USERS_NON_FRIENDS \
+UNION \
+SELECT * FROM CURRENT_USERS_FRIENDS" 
+	console.log(query);
+
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		users = results;
+		//Display all users
+		for(var i = 0 ; i < users.length ; ++i)
+		{
+			console.log(users[i].USERNAME + " " + users[i].FIRST_NAME + " " + users[i].LAST_NAME + " " + users[i].EMAIL + " " + users[i].STATUS);
+		}
+		//res.send(users);
+
+		query = "SELECT T.NAME AS TRIP_NAME, U.ID AS USER_ID, U.FIRST_NAME AS TRIP_OWNER, T.START_DATE AS START_DATE, T.END_DATE AS END_DATE, L.NAME AS LOCATION FROM TRIPS_LOCATIONS TL \
+		INNER JOIN TRIPS T \
+		ON T.ID = TL.TRIP_ID \
+		INNER JOIN LOCATIONS L \
+		ON L.ID = TL.LOCATION_ID \
+		INNER JOIN USERS U \
+		ON U.ID = T.OWNER \
+		WHERE L.NAME LIKE '%"+search_string+"%' OR \
+		T.NAME LIKE '%"+search_string+"%'";
+		console.log(query);
+		
+		conn.execute(query, [], function(err, results) {
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				//TODO: delete from stormpath also!
+				return;
+			}
+			trips = results;
+
+			// Display all trips/locations
+			for(var i = 0 ; i < trips.length ; ++i)
+			{
+				console.log(trips[i].TRIP_NAME + " " + trips[i].USER_ID + " " +
+					trips[i].TRIP_OWNER + " " + trips[i].START_DATE + " " + 
+					trips[i].END_DATE + " " + trips[i].LOCATION);
+			}
+			//res.send(trips);
+
+			res.render('search', {title:'Search', user:req.user, users: users, trips: trips});
+		});
+	});
 });
 
 // User profile
@@ -143,6 +235,23 @@ router.get('/profile', function(req, res) {
 
 });
 
+router.get('/request', function(req, res) {
+	console.log(req.query.type);
+	console.log(req.query.userid);
+	query = "INSERT INTO FRIENDS F VALUES ('"+userid+"','"+req.query.userid+"', 'Pending')";
+	
+	console.log(query);
+
+	conn.execute(query, [], function(err, results) {
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				//TODO: delete from stormpath also!
+				return;
+			}
+		});
+});
+/*
 // Populate stormapth
 router.get('/populate', function(req, res) {
 	var query = "select * from users";
@@ -209,5 +318,6 @@ router.get('/populate', function(req, res) {
 		}
 	});	
 });
+*/
 
 module.exports = router;
