@@ -1,3 +1,4 @@
+/*Privacy of 0 indicates private trips, privacy of 1 is public trips*/
 SELECT T.NAME AS Trip_Name, U.ID AS User_Id, U.FIRST_NAME AS Trip_Owner, T.START_DATE AS Start_Date, T.END_DATE AS End_Date, L.NAME AS Location
 FROM TRIPS_LOCATIONS TL
 INNER JOIN TRIPS T
@@ -6,5 +7,5 @@ INNER JOIN LOCATIONS L
 ON L.ID = TL.LOCATION_ID
 INNER JOIN USERS U
 ON U.ID = T.OWNER
-WHERE L.NAME LIKE '%San%' OR
-T.NAME LIKE '%Goa%'
+WHERE T.PRIVACY = 0 AND (L.NAME LIKE '%San%' OR
+T.NAME LIKE '%Goa%')
