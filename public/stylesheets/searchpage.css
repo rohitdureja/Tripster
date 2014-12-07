@@ -1,0 +1,120 @@
+.top-bar {
+  /* Set up the top bar */
+  background: #5FB009;
+  height: 50px;
+  opacity: 1.0;
+}
+
+.top-bar .name  h1 a img {
+  /* Set up the top bar for logo */
+  width: 90px;
+  padding-top: 10px;
+}
+
+.row .large-12 .large h1 a img {
+  margin-left: 25%;
+  margin-right: auto;
+  width: 50%;
+  padding-top: 10px;
+}
+
+.row .large-12 .tagline h3 {
+  margin-left: 12%;
+  text-align: center;
+  color: #FFFF00;
+  font-size: 40px;
+  -webkit-text-stroke-width: 0.5px;
+  -webkit-text-stroke-color: #66CC99;
+  width: 75%;
+}
+
+.row .large-12 .error p {
+  margin-left: 12%;
+  text-align: center;
+  color: red;
+  font-size: 15px;
+  //-webkit-text-stroke-width: 0.5px;
+  //-webkit-text-stroke-color: #66CC99;
+  width: 75%;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+body {
+    margin: 0 0 100px; /* bottom = footer height */
+}
+footer {
+    position: r;
+    left: 24%;
+    bottom: 0;
+    text-align: center;
+    font-size: 15px;
+    color: #FFFF00;
+    -webkit-text-stroke-width: 0.5px;
+    -webkit-text-stroke-color: #66CC99;
+    width: 50%;
+    height: 10%;
+}
+
+button, .button {
+  text-align: center;
+  background-color: #1FA612;
+  border-color: #66CC99;
+  color: #FFFF00;
+  width:100%;
+}
+
+button:hover, button:focus, .button:hover, .button:focus {
+  background-color: #0D4D08; 
+}
+
+button:hover, button:focus, .button:hover, .button:focus {
+  color: #FFFF00; 
+}
+
+.top-bar-section li.active:not(.has-form) a:not(.button) {
+  padding: 0 50px;
+  line-height: 50px;
+  color: white;
+  background: #138A0C; 
+}
+
+.top-bar-section li.active:not(.has-form) a:not(.button):hover {
+  background: #0A4A07;
+  color: white; 
+}
+
+.top-bar-section li:not(.has-form) a:not(.button) {
+  padding: 0 50px;
+  line-height: 50px;
+  background: #5FB009; 
+}
+
+.top-bar-section li:not(.has-form) a:not(.button):hover {
+  background: #0A4A07; 
+}
+
+.top-bar-section li.search a img {
+  height: 20px;
+  padding: 0 -10px;
+}
+
+input[type="text"],
+textarea {
+  background-color: #E3FACD;
+  font-size: 1.5rem;
+  height: 3.125rem;
+}
+
+table .button {
+  text-align: center;
+  font-size:12px;
+  background-color: #1FA612;
+  border-color: #66CC99;
+  color: #FFFF00;
+  width:100%;
+  padding: 0 50px;
+}
+
