@@ -24,6 +24,9 @@
             <li><a href="\requests">Requests</a></li>
           </ul>
           <ul class="right">
+            <li><a href="\createtrip">New Trip</a></li>
+          </ul>
+          <ul class="right">
             <li><a href="\profile"><%= user.givenName%></a></li>
           </ul>
           <ul class="right">
@@ -71,10 +74,10 @@
           <tbody>
             <% for(var i = 0 ; i < users.length ; ++i) { %>
               <tr>
-                <th><%=users[i].FIRST_NAME%></th>
-                <th><%=users[i].EMAIL%></th>
-                <th><%=users[i].USERNAME%></th>
-                <th width = '20%'><%if(users[i].STATUS == 'Not A Friend') { 
+                <td><%=users[i].FIRST_NAME%></td>
+                <td><%=users[i].EMAIL%></td>
+                <td><%=users[i].USERNAME%></td>
+                <td style="text-align: center" width = '20%'><%if(users[i].STATUS == 'Not A Friend') { 
                   var url = '/request?type=friend&userid=' + users[i].ID; %>
                   <a href = <%=url%>>Send Request</a>
                   <% } %>
@@ -84,7 +87,7 @@
                   <%if(users[i].STATUS == 'Accepted') { %>
                   Friend
                   <% } %>
-                </th>
+                </td>
               </tr>
             <% } %>
           </tbody>
@@ -108,10 +111,10 @@
           <tbody>
             <% for(var i = 0 ; i < trips.length ; ++i) { %>
               <tr>
-                <th><%=trips[i].TRIP_NAME%></th>
-                <th><%=trips[i].TRIP_OWNER%></th>
-                <th><%=trips[i].START_DATE%></th>
-                <th><%=trips[i].LOCATION%></th>
+                <td><%=trips[i].TRIP_NAME%></th>
+                <td><%=trips[i].TRIP_OWNER%></th>
+                <td><%=trips[i].START_DATE%></th>
+                <td><%=trips[i].LOCATION%></th>
               </tr>
             <% } %>
           </tbody>

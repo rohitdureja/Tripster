@@ -154,31 +154,31 @@ router.post('/search', function(req, res) {
 	console.log(userid);
 	//query = "SELECT U.USERNAME, U.FIRST_NAME, U.LAST_NAME, U.EMAIL FROM USERS U WHERE U.EMAIL LIKE '\%"+search_string+"\%' OR U.USERNAME LIKE '\%"+search_string+"\%' OR U.FIRST_NAME LIKE '\%"+search_string+"\%'";
 	query = "WITH SEARCHED_USER AS ( \
-SELECT U.ID \
-FROM USERS U \
-WHERE (U.EMAIL LIKE '%"+search_string+"%' OR \
-U.USERNAME LIKE '%"+search_string+"%' OR \
-U.FIRST_NAME LIKE '%"+search_string+"%')), \
-CURRENT_USERS_FRIENDS AS ( \
-SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, F.STATUS AS STATUS \
-FROM FRIENDS F, USERS U \
-INNER JOIN SEARCHED_USER SU \
-ON SU.ID = U.ID \
-WHERE (F.USER_ID1 = U.ID AND F.USER_ID2 = "+userid+") \
-OR (F.USER_ID2 = U.ID AND F.USER_ID1 = "+userid+")), \
-CURRENT_USERS_NON_FRIENDS AS ( \
-SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, 'Not A Friend' AS STATUS \
-FROM SEARCHED_USER SU \
-INNER JOIN USERS U \
-ON SU.ID = U.ID \
-WHERE SU.ID NOT IN( \
-SELECT CUF.ID \
-FROM CURRENT_USERS_FRIENDS CUF \
-) \
-) \
-SELECT * FROM CURRENT_USERS_NON_FRIENDS \
-UNION \
-SELECT * FROM CURRENT_USERS_FRIENDS" 
+	SELECT U.ID \
+	FROM USERS U \
+	WHERE (U.EMAIL LIKE '%"+search_string+"%' OR \
+	U.USERNAME LIKE '%"+search_string+"%' OR \
+	U.FIRST_NAME LIKE '%"+search_string+"%')), \
+	CURRENT_USERS_FRIENDS AS ( \
+	SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, F.STATUS AS STATUS \
+	FROM FRIENDS F, USERS U \
+	INNER JOIN SEARCHED_USER SU \
+	ON SU.ID = U.ID \
+	WHERE (F.USER_ID1 = U.ID AND F.USER_ID2 = "+userid+") \
+	OR (F.USER_ID2 = U.ID AND F.USER_ID1 = "+userid+")), \
+	CURRENT_USERS_NON_FRIENDS AS ( \
+	SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, 'Not A Friend' AS STATUS \
+	FROM SEARCHED_USER SU \
+	INNER JOIN USERS U \
+	ON SU.ID = U.ID \
+	WHERE SU.ID NOT IN( \
+	SELECT CUF.ID \
+	FROM CURRENT_USERS_FRIENDS CUF \
+	) \
+	) \
+	SELECT * FROM CURRENT_USERS_NON_FRIENDS \
+	UNION \
+	SELECT * FROM CURRENT_USERS_FRIENDS" 
 	console.log(query);
 
 	conn.execute(query, [], function(err, results) {
@@ -235,13 +235,66 @@ router.get('/profile', function(req, res) {
 
 });
 
+// Send, approve, reject friend requests and user requests
 router.get('/request', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
 	console.log(req.query.type);
-	console.log(req.query.userid);
-	query = "INSERT INTO FRIENDS F VALUES ('"+userid+"','"+req.query.userid+"', 'Pending')";
-	
-	console.log(query);
+	if(req.query.type=='friend')
+	{
+		query = "INSERT INTO FRIENDS F VALUES ('"+userid+"','"+req.query.userid+"', 'Pending')";
+		
+		console.log(query);
 
+		conn.execute(query, [], function(err, results) {
+				if(err) {
+					console.log('Error executing query: ', err);
+					res.send('There was a problem querying the databases');
+					//TODO: delete from stormpath also!
+					return;
+				}
+			});
+	}
+	if(req.query.type=='request')
+	{
+		if(req.query.decision=='accept')
+		{
+			query = "UPDATE FRIENDS F \
+			SET F.STATUS = 'Accepted' \
+			WHERE F.USER_ID1 = "+req.query.userid+" AND F.USER_ID2 = "+userid;
+		}
+		if(req.query.decision=='reject')
+		{
+			query = "UPDATE FRIENDS F \
+			SET F.STATUS = 'Rejected' \
+			WHERE F.USER_ID1 = "+req.query.userid+" AND F.USER_ID2 = "+userid;
+		}
+		console.log(query);
+
+		conn.execute(query, [], function(err, results) {
+				if(err) {
+					console.log('Error executing query: ', err);
+					res.send('There was a problem querying the databases');
+					return;
+				}
+			});
+	}
+});
+
+router.get('/requests', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var user_requests;
+	query = "SELECT U.ID, U.FIRST_NAME, U.EMAIL, U.USERNAME, F.STATUS \
+	FROM USERS U \
+	INNER JOIN FRIENDS F \
+	ON F.USER_ID1 = U.ID \
+	WHERE F.USER_ID2 = "+userid;
+	console.log(query);
 	conn.execute(query, [], function(err, results) {
 			if(err) {
 				console.log('Error executing query: ', err);
@@ -249,6 +302,47 @@ router.get('/request', function(req, res) {
 				//TODO: delete from stormpath also!
 				return;
 			}
+			user_requests = results;
+			for(var i = 0 ; i < user_requests.length ; ++i)
+			{
+				console.log(user_requests[i].ID + " " + user_requests[i].USERNAME);
+			}
+			res.render('requests', {title: 'Requests', user: req.user, user_requests: user_requests});
+		});
+});
+
+// Create trip form
+router.get('/createtrip', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	res.render('createtrip', {title: 'Create', user:req.user});
+});
+
+// Create trip and add to database
+router.post('/createtrip', function(req, res) {
+	var tripname = req.body.tripname;
+	var type = req.body.type;
+	var startdate = req.body.startdate;
+	var enddate = req.body.enddate;
+	var privacy = 0; //public:1 private:0
+
+	console.log(tripname);
+	console.log(type);
+	console.log(startdate);
+	console.log(enddate);
+	console.log(privacy);
+	query = "INSERT INTO TRIPS VALUES (TRIPID_SEQ.NEXTVAL,'"+tripname+"','"+startdate+"','"+enddate+"','"+privacy+"','"+type+"',"+userid+")";
+	console.log(query);
+	conn.execute(query, [], function(err, results) {
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				//TODO: delete from stormpath also!
+				return;
+			}
+			res.redirect('/home');
 		});
 });
 /*
