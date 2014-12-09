@@ -47,7 +47,7 @@
         <div class="large-12 columns">
           <div class="row collapse">
             <div class="small-10 columns">
-              <input type = "text" name="searchquery" placeholder="Search for users, trips or locations"/>
+              <input type = "text" name="searchquery" placeholder="Search for users, trips or locations" data-parsley-required="true" data-parsley-trigger="change"/>
             </div>
             <div class = "small-2 columns">
               <input type="submit" class="button" value="Search"></input>
@@ -126,7 +126,7 @@
     <script src="/javascripts/vendor/jquery.js"></script>
     <script src="/javascripts/foundation.min.js"></script>
     <script src="/javascripts/foundation/foundation.reveal.js"></script>
-    <script src="javascripts/parsley.min.js"></script>
+    <script src="/javascripts/parsley.min.js"></script>
     <script>
       $(document).foundation();
     </script>

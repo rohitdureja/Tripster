@@ -6,6 +6,7 @@
     <title>Tripster | <%=title %></title>
     <link rel="stylesheet" href="/stylesheets/foundation.css" />
     <link rel="stylesheet" href="/stylesheets/createtrip.css" />
+    <link rel="stylesheet" href="/stylesheets/pickadate.02.classic.css">
     <script src="javascripts/vendor/modernizr.js"></script>
   </head>
   <body>
@@ -42,7 +43,7 @@
     <br />
     <br />
     
-    <form method='post' action='/createtrip'>
+    <form method='post' action='/createtrip' data-parsley-validate>
       <div class="row">
         <div class="large-12 columns">
           <div class="row collapse">
@@ -50,7 +51,7 @@
               <h3>Trip name?</h3>
             </div>
             <div class="small-10 columns">
-              <input type='text' name='tripname' placeholder='To the moon and back'/>
+              <input type='text' name='tripname' placeholder='To the moon and back'/ data-parsley-required="true" data-parsley-maxlength="50" data-parsley-minlength="5" data-parsley-trigger="change">
             </div>
           </div>
           <div class="row collapse">
@@ -58,7 +59,17 @@
               <h3>Type?</h3>
             </div>
             <div class="small-10 columns">
-              <input type='text' name='type' placeholder='Adventure/Trekking/Festival'/>
+              <select name="type">
+                <option value="Adventure">Adventure</option>
+                <option value="Agriculture">Agriculture</option>
+                <option value="Bicycle tour">Bicycle tour</option>
+                <option value="Business">Business</option>
+                <option value="Cruise">Cruise</option>
+                <option value="Cultural">Cultural</option>
+                
+
+              </select>
+              <!--<input type='text' name='type' placeholder='Adventure/Trekking/Festival'/ data-parsley-required="true" data-parsley-maxlength="30" data-parsley-minlength="5" data-parsley-trigger="change">-->
             </div>
           </div>
           <div class="row collapse">
@@ -66,7 +77,7 @@
               <h3>Start date?</h3>
             </div>
             <div class="small-10 columns">
-              <input type='text' name='startdate' placeholder='DD-Mon-YYYY : 07-Jan-2014'/>
+              <input type='text' class="datepicker" name='startdate' data-parsley-required="true"/>
             </div>
           </div>
           <div class="row collapse">
@@ -74,7 +85,19 @@
               <h3>End date?</h3>
             </div>
             <div class="small-10 columns">
-              <input type='text' name='enddate' placeholder='DD-Mon-YYYY : 10-Jan-2014'/>
+              <input type='text' class="datepicker" name='enddate' data-parsley-required="true"/>
+            </div>
+          </div>
+          <div class="row collapse">
+            <div class="small-2 columns">
+              <h3>Privacy?</h3>
+            </div>
+            <div class="small-10 columns">
+              <select name="privacy">
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+              </select>
+              <!--<input type='text' name='privacy' data-parsley-required="true"/>-->
             </div>
           </div>
           <br />
@@ -92,9 +115,14 @@
     <script src="/javascripts/vendor/jquery.js"></script>
     <script src="/javascripts/foundation.min.js"></script>
     <script src="/javascripts/foundation/foundation.reveal.js"></script>
-    <script src="javascripts/parsley.min.js"></script>
+    <script src="/javascripts/parsley.min.js"></script>
+    <script src="/javascripts/rainbow.js"></script>
+    <script src="/javascripts/pickadate.legacy.js"></script>
     <script>
       $(document).foundation();
+    </script>
+    <script type="text/javascript">
+        $( '[type=date], .datepicker' ).pickadate()
     </script>
   </body>
 </html>

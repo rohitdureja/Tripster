@@ -30,7 +30,7 @@
             <li><a href="\profile"><%= user.givenName%></a></li>
           </ul>
           <ul class="right">
-            <li class="active"><a href="\home">Home</a></li>
+            <li><a href="\home">Home</a></li>
           </ul>
           <ul class="right">
             <li class="\search"><a href="\search"><img src="/images/search.png" /></a></li>
@@ -39,38 +39,47 @@
       </nav>
     </div>
 
+    <br />
     <!--<h1> Welcome <%= user.givenName %> <%=user.surname %> <%=user.id %></h1>-->
+    <div class="row">
+      <div class="large-12 columns">
+        <div class="large-8 columns">
+          <h3><%=trip[0].NAME%></h3>
+          <h5>Start Date: <%=trip[0].START_DATE%></h5>
+          <h6>Number of friends invited:<h6>
+          </div>
+          <div align='center' class="large-2 columns">
+            <br />
+            <a href='#'><img style="width: 30%" src="/images/invite.png" /></a>
+          </div>
+      </div>
+    </div>
+    
     <br />
     <div class="row">
       <div class="large-12 columns">
         <div class="large-3 columns">
           <div class="panel">
-            <h5>My Trips</h5>
-             <p>
-              <table style="width: 100%">
-                <% for(var i = 0 ; i < mytrips.length ; ++i) { 
-                  var url = "/trip?id="+mytrips[i].ID;
-                %>
-                <tr>
-                  <td style="text-align: left" width = '80%'><a href=<%=url%>><%=mytrips[i].NAME%></a></td>
-                  <td style="text-align: right" width = '20%'><date><%=mytrips[i].START_DATE%></date></td>
-                </tr>
-                <% } %>
-              </table>
-             </p>
+            <h5>Itinerary</h5>
+              <p>It has an easy to override visual style, and is appropriately subdued.</p>
+
             <h5>All Trips</h5>
               <p>It has an easy to override visual style, and is appropriately subdued.</p>
           </div>
         </div>
         <div class="large-6 columns">
           <div class="panel">
-            <h5>Newsfeed</h5>
+            <h5>Trip Updates</h5>
               <p>It has an easy to override visual style, and is appropriately subdued.</p>
           </div>
         </div>
         <div class="large-3 columns">
           <div class="panel">
-            <h5>Friends</h5>
+            <h5>Going</h5>
+              <p>It has an easy to override visual style, and is appropriately subdued.</p>
+            <h5>Not Going</h5>
+              <p>It has an easy to override visual style, and is appropriately subdued.</p>
+            <h5>Pending</h5>
               <p>It has an easy to override visual style, and is appropriately subdued.</p>
           </div>
         </div>

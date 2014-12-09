@@ -103,9 +103,9 @@ button:hover, button:focus, .button:hover, .button:focus {
 
 input[type="text"],
 textarea {
-  background-color: #E3FACD;
+  
   font-size: 1.5rem;
-  height: 3.125rem;
+  height: 3.0rem;
 }
 
 form, h3 {

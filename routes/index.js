@@ -40,6 +40,7 @@ router.get('/', function(req, res) {
 
 // User home page, once logged in
 router.get('/home', function(req, res) {
+	var mytrips;
 	console.log(res.user);
 	if(!req.user || req.user.status !== 'ENABLED') {
 		error = 'Error: User not logged in!';
@@ -56,7 +57,21 @@ router.get('/home', function(req, res) {
 		req.user.id = results[0].ID;
 		userid = results[0].ID;
 		console.log(req.user.id);
-		res.render('home', {title: 'Home', user: req.user});
+
+		// get trips owned by user
+		query = "select ID, NAME, to_char(START_DATE, 'MM/DD/YYYY') AS START_DATE from trips where OWNER="+userid+" ORDER BY START_DATE";
+		console.log(query);
+		conn.execute(query, [], function(err, results) {
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				return;
+			}
+			mytrips=results;
+			console.log(mytrips);
+
+			res.render('home', {title: 'Home', user: req.user, mytrips: mytrips});
+		});
 	});
 
 });
@@ -322,11 +337,15 @@ router.get('/createtrip', function(req, res) {
 
 // Create trip and add to database
 router.post('/createtrip', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
 	var tripname = req.body.tripname;
 	var type = req.body.type;
 	var startdate = req.body.startdate;
 	var enddate = req.body.enddate;
-	var privacy = 0; //public:1 private:0
+	var privacy = req.body.privacy=='public'?1:0;
 
 	console.log(tripname);
 	console.log(type);
@@ -344,6 +363,34 @@ router.post('/createtrip', function(req, res) {
 			}
 			res.redirect('/home');
 		});
+});
+
+// Trip page
+router.get('/trip', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var trip;
+	var tripid = req.query.id;
+	query = "SELECT NAME, to_char(START_DATE, 'MM/DD/YYYY') AS START_DATE FROM TRIPS WHERE ID="+tripid;
+	console.log(query);
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		trip = results;
+		console.log(trip);
+		res.render('trip', {title: 'Trip', user: req.user, trip: trip});
+	});
+});
+
+// Invite friends to trips
+router.get('/invite', function(req, res) {
+
 });
 /*
 // Populate stormapth

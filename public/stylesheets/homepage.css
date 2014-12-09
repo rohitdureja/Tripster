@@ -11,6 +11,10 @@
   padding-top: 10px;
 }
 
+.row { 
+  max-width: 100%; 
+}
+
 img.bg {
       /* Set rules to fill background */
       min-height: 100%;
@@ -157,4 +161,9 @@ button.alert, .button.alert {
   padding: 0 -10px;
 }
 
+.row .panel {
+  background-color: #E3FACD;
+}
+
+table {border: none;}
 
