@@ -1,0 +1,14 @@
+WITH USER_FRIENDS AS (
+SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL
+FROM FRIENDS F, USERS U
+WHERE
+F.STATUS = 'Accepted' AND
+((F.USER_ID1 = U.ID AND F.USER_ID2 = 1001) /*Replace number with current users user id*/
+OR (F.USER_ID2 = U.ID AND F.USER_ID1 = 1001))) /*Replace number with current users user id*/
+
+SELECT UF.ID, UF.USERNAME, UF.FIRST_NAME, UF.EMAIL, TU.STATUS
+FROM USER_FRIENDS UF
+LEFT OUTER JOIN TRIPS_USERS TU
+ON TU.USER_ID = UF.ID
+WHERE TU.TRIP_ID = 1001 /*Replace number with trip id*/
+
