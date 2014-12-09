@@ -1,0 +1,1 @@
+INSERT INTO LOCATIONS VALUES (LOCATIONID_SEQ2.NEXTVAL,'Freedom Park',NULL,'Bangalore','Karnataka','India','560019');

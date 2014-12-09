@@ -1,0 +1,89 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tripster | <%=title %></title>
+    <link rel="stylesheet" href="/stylesheets/foundation.css" />
+    <link rel="stylesheet" href="/stylesheets/searchpage.css" />
+    <script src="javascripts/vendor/modernizr.js"></script>
+  </head>
+  <body>
+    <div class ="sticky">
+      <nav class="top-bar" data-topbar role="navigation" data-options="sticky_on: large">
+        <ul class="title-area">
+          <li class="name">
+            <h1><a href="http://localhost:3000"><img src="/images/tripster_logo.png" /></a></h1>
+          </li>
+        </ul>
+        <section class="top-bar-section">
+          <ul class="right">
+            <li><a href="\logout">Logout</a></li>
+          </ul>
+          <ul class="right">
+            <li class="active"><a href="\requests">Requests</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\createtrip">New Trip</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\profile"><%= user.givenName%></a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\home">Home</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\search"><img src="/images/search.png" /></a></li>
+          </ul>
+        </section>
+      </nav>
+    </div>
+
+    <br />
+    <br />
+    
+    <%if(user_requests!='' && user_requests.length!=0) { %>
+    <div class = "row">
+      <div class = "large-12 columns">
+        <table width="100%">
+          <thead>
+            <tr>
+              <th>Name </th>
+              <th>Email </th>
+              <th>Username </th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for(var i = 0 ; i < user_requests.length ; ++i) { %>
+              <tr>
+                <td><%=user_requests[i].FIRST_NAME%></td>
+                <td><%=user_requests[i].EMAIL%></td>
+                <td><%=user_requests[i].USERNAME%></td>
+                <td style="text-align: center" width = '20%'><% if(user_requests[i].STATUS == 'Pending') { 
+                  var url_accept='/request?type=request&decision=accept&userid='+user_requests[i].ID;
+                  var url_reject='/request?type=request&decision=reject&userid='+user_requests[i].ID; %>
+                  <a href= <%=url_accept%>><img width = '20px'src="\images\tick.png" /></a>
+                  <a href= <%=url_reject%>><img width = '15px'src="\images\cross.png" /></a>
+                  <% } else { %>
+                    <%=user_requests[i].STATUS%>
+                    <% } %>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+    </div>
+    </div>
+    <% } %>
+  
+
+    <script src="/javascripts/vendor/jquery.js"></script>
+    <script src="/javascripts/foundation.min.js"></script>
+    <script src="/javascripts/foundation/foundation.reveal.js"></script>
+    <script src="javascripts/parsley.min.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
+  </body>
+</html>

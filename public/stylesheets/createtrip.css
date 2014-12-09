@@ -108,4 +108,31 @@ textarea {
   height: 3.125rem;
 }
 
+form, h3 {
+  text-align: left;
+  font-size: 1.5rem;
+  padding-top: 5px;
+  color: #215706;
+}
+
+button, .button {
+  text-align: center;
+  background-color: #1FA612;
+  border-color: #66CC99;
+  color: #FFFF00;
+  width:20%;
+}
+
+button .radius, .button.radius {
+  border-radius: 10px; 
+}
+
+button:hover, button:focus, .button:hover, .button:focus {
+  background-color: #0D4D08; 
+}
+
+button:hover, button:focus, .button:hover, .button:focus {
+  color: #FFFF00; 
+}
+
 

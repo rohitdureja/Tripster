@@ -1,0 +1,6 @@
+INSERT INTO TRIPS VALUES (TRIPID_SEQ.NEXTVAL,"relaxed trip",'2014-12-27','2014-12-27','1','park','1001');
+
+
+
+
+

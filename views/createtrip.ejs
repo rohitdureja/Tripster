@@ -1,0 +1,100 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tripster | <%=title %></title>
+    <link rel="stylesheet" href="/stylesheets/foundation.css" />
+    <link rel="stylesheet" href="/stylesheets/createtrip.css" />
+    <script src="javascripts/vendor/modernizr.js"></script>
+  </head>
+  <body>
+    <div class ="sticky">
+      <nav class="top-bar" data-topbar role="navigation" data-options="sticky_on: large">
+        <ul class="title-area">
+          <li class="name">
+            <h1><a href="http://localhost:3000"><img src="/images/tripster_logo.png" /></a></h1>
+          </li>
+        </ul>
+        <section class="top-bar-section">
+          <ul class="right">
+            <li><a href="\logout">Logout</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\requests">Requests</a></li>
+          </ul>
+          <ul class="right">
+            <li class="active"><a href="\createtrip">Create Trip</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\profile"><%= user.givenName%></a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\home">Home</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\search"><img src="/images/search.png" /></a></li>
+          </ul>
+        </section>
+      </nav>
+    </div>
+
+    <br />
+    <br />
+    
+    <form method='post' action='/createtrip'>
+      <div class="row">
+        <div class="large-12 columns">
+          <div class="row collapse">
+            <div class="small-2 columns">
+              <h3>Trip name?</h3>
+            </div>
+            <div class="small-10 columns">
+              <input type='text' name='tripname' placeholder='To the moon and back'/>
+            </div>
+          </div>
+          <div class="row collapse">
+            <div class="small-2 columns">
+              <h3>Type?</h3>
+            </div>
+            <div class="small-10 columns">
+              <input type='text' name='type' placeholder='Adventure/Trekking/Festival'/>
+            </div>
+          </div>
+          <div class="row collapse">
+            <div class="small-2 columns">
+              <h3>Start date?</h3>
+            </div>
+            <div class="small-10 columns">
+              <input type='text' name='startdate' placeholder='DD-Mon-YYYY : 07-Jan-2014'/>
+            </div>
+          </div>
+          <div class="row collapse">
+            <div class="small-2 columns">
+              <h3>End date?</h3>
+            </div>
+            <div class="small-10 columns">
+              <input type='text' name='enddate' placeholder='DD-Mon-YYYY : 10-Jan-2014'/>
+            </div>
+          </div>
+          <br />
+          <div class = "row">
+          <div align="center" class="small-12 columns">
+            <input type="submit" value="Create Trip" class="radius button">      
+          </div>
+        </div>
+        </div>
+      </div>
+    </form>
+    
+  
+
+    <script src="/javascripts/vendor/jquery.js"></script>
+    <script src="/javascripts/foundation.min.js"></script>
+    <script src="/javascripts/foundation/foundation.reveal.js"></script>
+    <script src="javascripts/parsley.min.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
+  </body>
+</html>
