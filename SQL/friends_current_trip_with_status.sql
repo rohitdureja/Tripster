@@ -2,8 +2,9 @@ WITH USER_FRIENDS_INVITED AS (
 SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, TU.STATUS
 FROM USERS U
 INNER JOIN TRIPS_USERS TU
-ON TU.USER_ID_REQUEST = 1000 /*Replace number with current users user id*/
-WHERE TU.TRIP_ID = 1045 /*Replace number with trip id*/
+ON U.ID = TU.USER_ID
+WHERE TU.USER_ID_REQUEST = 1000 /*Replace number with current users user id*/
+AND TU.TRIP_ID = 1045 /*Replace number with trip id*/
 ),
 
 USER_FRIENDS AS (
