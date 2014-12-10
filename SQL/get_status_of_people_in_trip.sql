@@ -1,0 +1,6 @@
+SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, TU.STATUS
+FROM USERS U
+INNER JOIN TRIPS_USERS TU
+ON U.ID = TU.USER_ID
+WHERE TU.USER_ID_REQUEST = 1000 /*Replace number with current users user id*/
+AND TU.TRIP_ID = 1020 /*Replace number with trip id*/
