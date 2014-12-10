@@ -70,8 +70,12 @@
         </div>
         <div class="large-3 columns">
           <div class="panel">
-            <h5>Friends</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
+            <h5>Friends (<%=friends.length%>)</h5>
+              <ul>
+                <% for(var i = 0 ; i < friends.length ; ++i) { %>
+                <li><%=friends[i].FIRST_NAME!=null?friends[i].FIRST_NAME:''%> <%=friends[i].LAST_NAME!=null?friends[i].LAST_NAME:''%></li>
+                <% } %>
+              </ul>
           </div>
         </div>
       </div>

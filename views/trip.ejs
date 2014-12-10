@@ -48,10 +48,13 @@
           <h5>Start Date: <%=trip[0].START_DATE%></h5>
           <h6>Number of friends invited:<h6>
           </div>
+          <% if(user.id == trip.OWNER) { %>
           <div align='center' class="large-2 columns">
             <br />
-            <a href='#'><img style="width: 30%" src="/images/invite.png" /></a>
+            <% var url = '/invite?tripid='+tripid; %>
+            <a href=<%=url%>><img style="width: 30%" src="/images/invite.png" /></a>
           </div>
+          <% } %>
       </div>
     </div>
     
