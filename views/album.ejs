@@ -46,7 +46,7 @@
         <div class="large-8 columns">
           <h3><% var url = '/trip?id='+tripid; %><a href=<%=url%>><%=trip[0].NAME%></a></h3>
           <h5>Start Date: <%=trip[0].START_DATE%></h5>
-          <h6>Number of photos (<%=photos.length%>)<h6>
+          <h6>Number of photos and videos (<%=photos.length%>)<h6>
           </div>
       </div>
     </div>
@@ -65,14 +65,77 @@
             </tr>
           </thead>
           <tbody>
-            <% for(var i = 0 ; i < photos.length ; ++i) { %>
+            <% for(var i = 0 ; i < photos.length ; ++i) { 
+              if(photos[i].CONTENT_TYPE == 'Photo') { %>
               <tr>
-                <td width = '20%'><% var url = '/photo?tripid='+tripid+'&albumid='+albumid+'&photoid='+photos[i].PHOTO_ID%><a href=<%=url%>><img src=<%=photos[i].URL%>></img></a></td>
+                <td width = '20%'><% var url = '/photo?tripid='+tripid+'&albumid='+albumid+'&photoid='+photos[i].ID%><a href=<%=url%>><img src=<%=photos[i].URL%>></img></a></td>
                 <td width = '50%'><%=photos[i].TAGLINE%></td>
                 <td width = '15%'><%=photos[i].PIC_DATE%></td>
-                <td width = '15%'><%=photos[i].LIKES%></td>
+                <td width = '15%'><%if(photos[i].LIKES == null) { %>
+                    0
+                  <% } else { %>
+                  <%=photos[i].LIKES%>
+                  <% } %>
+                  
+
+                </td>
               </tr>
-            <% } %>
+            <% }} %>
+          </tbody>
+        </table>
+    </div>
+    </div>
+    <% } %>
+
+    <%if(photos!='' && photos.length!=0) { %>
+    <div style="max-width: 80%" class = "row">
+      <div class = "large-12 columns">
+        <table>
+          <thead>
+            <tr>
+              <th>Video </th>
+              <th>Tagline </th>
+              <th>Date </th>
+              <th>Likes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for(var i = 0 ; i < photos.length ; ++i) { 
+              if(photos[i].CONTENT_TYPE == 'Video') { %>
+              <tr>
+                <td width = '20%'>
+                <script type="text/javascript">
+                  function youtube_parser(url){
+                    var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                    var match = url.match(regExp);
+                    if (match && match[2].length == 11) {
+                      return match[2];
+                    } else {
+                    //error
+                    }
+                  }
+                </script>
+                <script>
+                var url = 'http://img.youtube.com/vi/'+youtube_parser(<%=photos[i].URL%>)+'.jpg';
+                document.write(url);
+                </script>
+                
+                <script>
+                </script>
+
+                </td>
+                <td width = '50%'><%=photos[i].TAGLINE%></td>
+                <td width = '15%'><%=photos[i].PIC_DATE%></td>
+                <td width = '15%'><%if(photos[i].LIKES == null) { %>
+                    0
+                  <% } else { %>
+                  <%=photos[i].LIKES%>
+                  <% } %>
+                  
+
+                </td>
+              </tr>
+            <% }} %>
           </tbody>
         </table>
     </div>
