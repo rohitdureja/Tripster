@@ -560,38 +560,38 @@ router.get('/album', function(req, res) {
 		}
 		trip = results;
 		query = "WITH PIC_LIKES AS (SELECT PHOTO_ID, COUNT(*) AS LIKES \
-FROM PHOTOS_LIKES PL \
-INNER JOIN PHOTOS P \
-ON PL.PHOTO_ID = P.ID \
-INNER JOIN ALBUMS A \
-ON A.ID = P.ALBUM_ID \
-WHERE A.ID = "+albumid+" \
-GROUP BY PHOTO_ID), \
-VID_LIKES AS (SELECT VIDEO_ID, COUNT(*) AS LIKES \
-FROM VIDEOS_LIKES VL \
-INNER JOIN VIDEOS V \
-ON VL.VIDEO_ID = V.ID \
-INNER JOIN ALBUMS A \
-ON A.ID = V.ALBUM_ID \
-WHERE A.ID = "+albumid+" \
-GROUP BY VIDEO_ID), \
-PICS AS (SELECT P.ID, PL.LIKES, to_char(P.PIC_DATE, 'MM/DD/YYYY') AS PIC_DATE, P.TAGLINE, P.URL, 'Photo' AS CONTENT_TYPE \
-FROM PHOTOS P \
-LEFT OUTER JOIN \
-PIC_LIKES PL \
-ON PL.PHOTO_ID = P.ID \
-WHERE P.ALBUM_ID = "+albumid+" \
-ORDER BY P.PIC_DATE DESC), \
-VIDS AS ( \
-SELECT V.ID, VL.LIKES, to_char(V.VIDEO_DATE, 'MM/DD/YYYY') AS VIDEO_DATE, V.TAGLINE, V.URL, 'Video' AS CONTENT_TYPE \
-FROM VIDEOS V \
-LEFT OUTER JOIN \
-VID_LIKES VL \
-ON VL.VIDEO_ID = V.ID \
-WHERE V.ALBUM_ID = "+albumid+" \
-ORDER BY V.VIDEO_DATE DESC \
-) \
-SELECT * FROM PICS UNION SELECT * FROM VIDS";
+		FROM PHOTOS_LIKES PL \
+		INNER JOIN PHOTOS P \
+		ON PL.PHOTO_ID = P.ID \
+		INNER JOIN ALBUMS A \
+		ON A.ID = P.ALBUM_ID \
+		WHERE A.ID = "+albumid+" \
+		GROUP BY PHOTO_ID), \
+		VID_LIKES AS (SELECT VIDEO_ID, COUNT(*) AS LIKES \
+		FROM VIDEOS_LIKES VL \
+		INNER JOIN VIDEOS V \
+		ON VL.VIDEO_ID = V.ID \
+		INNER JOIN ALBUMS A \
+		ON A.ID = V.ALBUM_ID \
+		WHERE A.ID = "+albumid+" \
+		GROUP BY VIDEO_ID), \
+		PICS AS (SELECT P.ID, PL.LIKES, to_char(P.PIC_DATE, 'MM/DD/YYYY') AS PIC_DATE, P.TAGLINE, P.URL, 'Photo' AS CONTENT_TYPE \
+		FROM PHOTOS P \
+		LEFT OUTER JOIN \
+		PIC_LIKES PL \
+		ON PL.PHOTO_ID = P.ID \
+		WHERE P.ALBUM_ID = "+albumid+" \
+		ORDER BY P.PIC_DATE DESC), \
+		VIDS AS ( \
+		SELECT V.ID, VL.LIKES, to_char(V.VIDEO_DATE, 'MM/DD/YYYY') AS VIDEO_DATE, V.TAGLINE, V.URL, 'Video' AS CONTENT_TYPE \
+		FROM VIDEOS V \
+		LEFT OUTER JOIN \
+		VID_LIKES VL \
+		ON VL.VIDEO_ID = V.ID \
+		WHERE V.ALBUM_ID = "+albumid+" \
+		ORDER BY V.VIDEO_DATE DESC \
+		) \
+		SELECT * FROM PICS UNION SELECT * FROM VIDS";
 		conn.execute(query, [], function(err, results) {
 		if(err) {
 			console.log('Error executing query: ', err);
@@ -614,7 +614,7 @@ router.get('/photo', function(req, res) {
 		res.redirect('/');
 	}
 	var album;
-	var photo;
+	var photos;
 	var comment;
 	var photoid = req.query.photoid;
 	var albumid = req.query.albumid;
@@ -622,7 +622,7 @@ router.get('/photo', function(req, res) {
 	console.log(photoid);
 	console.log(albumid);
 	console.log(tripid);
-	query = "SELECT A.NAME, A.ID, A.PRIVACY FROM ALBUMS A WHERE A.TRIP_ID="+tripid;
+	query = "SELECT A.NAME, A.ID, A.PRIVACY FROM ALBUMS A WHERE A.TRIP_ID="+tripid+"AND A.ID = "+albumid;
 	conn.execute(query, [], function(err, results) {
 		if(err) {
 			console.log('Error executing query: ', err);
@@ -632,9 +632,26 @@ router.get('/photo', function(req, res) {
 		}
 		album = results;
 		console.log(album);
-		query = query = "SELECT P.ID AS PHOTO_ID, P.LIKES, to_char(P.PIC_DATE, 'MM/DD/YYYY') AS PIC_DATE, P.TAGLINE, P.URL \
-			FROM PHOTOS P \
-			WHERE P.ALBUM_ID = "+albumid+" AND P.ID = "+photoid;
+		query = "WITH LIKE_COUNT AS ( \
+		SELECT PHOTO_ID, COUNT(*) AS LIKE_COUNT \
+		FROM PHOTOS_LIKES \
+		WHERE PHOTO_ID = "+photoid+" \
+		GROUP BY PHOTO_ID), \
+		STATUS AS ( \
+		SELECT PHOTO_ID, 'LIKED' AS STATUS \
+		FROM PHOTOS_LIKES PL \
+		WHERE PHOTO_ID = "+photoid+" AND USER_ID = "+userid+"), \
+		PIC AS ( \
+		SELECT P.ID, P.URL \
+		FROM PHOTOS P \
+		WHERE P.ID = "+photoid+" ) \
+		SELECT P.ID, P.URL, LC.LIKE_COUNT, S.STATUS \
+		FROM PIC P \
+		LEFT OUTER JOIN LIKE_COUNT LC \
+		ON P.ID = LC.PHOTO_ID \
+		LEFT OUTER JOIN STATUS S \
+		ON LC.PHOTO_ID = S.PHOTO_ID";
+	console.log(query);
 			conn.execute(query, [], function(err, results) {
 		if(err) {
 			console.log('Error executing query: ', err);
@@ -642,8 +659,8 @@ router.get('/photo', function(req, res) {
 			//TODO: delete from stormpath also!
 			return;
 		}
-		photo = results;
-		console.log(photo);
+		photos = results;
+		console.log(photos);
 		query = "SELECT PC.PHOTO_ID, U.FIRST_NAME, U.LAST_NAME, U.ID, PC.PHOTO_COMMENT, to_char(PC.COMMENT_DATE, 'MM/DD/YYYY') AS COMMENT_DATE FROM PHOTOS_COMMENTS PC \
 		INNER JOIN USERS U \
 		ON U.ID = PC.COMMENTER_ID \
@@ -659,7 +676,7 @@ router.get('/photo', function(req, res) {
 		}
 		comment = results;
 		console.log(comment);
-		res.render('photo', {title: 'Photo', user: req.user, album: album, photo: photo, tripid: tripid, comments: comment});
+		res.render('photo', {title: 'Photo', user: req.user, album: album, photos: photos, tripid: tripid, comments: comment});
 	});
 	});
 	});
@@ -687,6 +704,115 @@ router.post('/addcomment', function(req, res) {
 		res.redirect('/photo?tripid='+tripid+'&albumid='+albumid+'&photoid='+photoid);
 	});
 });
+
+// post a like
+router.get('/like', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var tripid = req.query.tripid;
+	var albumid = req.query.albumid;
+	var photoid = req.query.photoid;
+	query = "INSERT INTO PHOTOS_LIKES VALUES ("+userid+", "+photoid+")";
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		res.redirect('/photo?tripid='+tripid+'&albumid='+albumid+'&photoid='+photoid);
+	});
+});
+
+// page for creating a new album
+router.get('/newalbum', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var tripid = req.query.tripid;
+	var trip;
+	query = "SELECT NAME, to_char(START_DATE, 'MM/DD/YYYY') AS START_DATE, OWNER FROM TRIPS WHERE ID="+tripid;
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		trip = results;
+		res.render('newalbum', {title: 'New Album', user: req.user, tripid:tripid, trip: trip});
+});
+});
+
+
+// create a new album
+router.post('/createalbum', function(req, res) {
+	var tripid = req.query.tripid;
+	var albumname = req.body.albumname;
+	var privacy = req.body.privacy=='public'?1:0;
+	console.log(tripid + " " + albumname + " " + privacy);
+	query = "INSERT INTO ALBUMS VALUES(ALBUMID_SEQ.nextval, "+tripid+", '"+albumname+"', "+privacy+")";
+	console.log(query);
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		res.redirect('/albums?tripid='+tripid);
+	});
+});
+
+// give options for adding a new photo
+router.get('/newphoto', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var tripid = req.query.tripid;
+	var albumid = req.query.albumid;
+	var album;
+	query = "SELECT A.NAME, A.ID, A.PRIVACY FROM ALBUMS A WHERE A.TRIP_ID="+tripid+"AND A.ID = "+albumid;
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		album = results;
+	res.render('newphoto', {title: 'New Photo', user: req.user, album:album, tripid: tripid});
+});
+});
+
+// add photo to database
+router.post('/addphoto', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var tripid = req.query.tripid;
+	var albumid = req.query.albumid;
+	var photourl = req.body.photourl;
+	var phototagline = req.body.phototagline;
+	var photoprivacy = req.body.photoprivacy=='public'?1:0;
+	query = "INSERT INTO PHOTOS VALUES (PHOTOID_SEQ.nextval, "+albumid+", '"+phototagline+"', "+photoprivacy+", sysdate, '"+photourl+"')";
+	console.log(query);
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		res.redirect('/album?=tripid'+tripid+'&albumid='+albumid);
+	});
+});
+
 /*
 // Populate stormapth
 router.get('/populate', function(req, res) {

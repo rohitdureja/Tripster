@@ -67,9 +67,10 @@
               <p>It has an easy to override visual style, and is appropriately subdued.</p>
 
             <h5>Albums</h5>
-              <p><%var viewurl = '/albums?tripid='+tripid; %>
+              <p><%var viewurl = '/albums?tripid='+tripid; 
+                    var newalbum = '/newalbum?tripid='+tripid;%>
                 <a href=<%=viewurl%>>View Albums</a> <br />
-                New Album
+                <a href=<%=newalbum%>>New Album</a>
             </p>
           </div>
         </div>

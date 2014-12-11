@@ -47,7 +47,11 @@
           <h3><% var url = '/trip?id='+tripid; %><a href=<%=url%>><%=trip[0].NAME%></a></h3>
           <h5>Start Date: <%=trip[0].START_DATE%></h5>
           <h6>Number of photos and videos (<%=photos.length%>)<h6>
-          </div>
+        </div>
+        <div class="large-2 columns">
+          <% var url = '/newphoto?tripid='+tripid+'&albumid='+albumid; %>
+          <a href = <%=url%>><img width="20%" src='/images/sign.png' /></a>
+        </div>
       </div>
     </div>
     <br />
