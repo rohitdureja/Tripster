@@ -44,53 +44,48 @@
     <div class="row">
       <div class="large-12 columns">
         <div class="large-8 columns">
-          <h3><%=trip[0].NAME%></h3>
+          <h3><% var url = '/trip?id='+tripid; %><a href=<%=url%>><%=trip[0].NAME%></a></h3>
           <h5>Start Date: <%=trip[0].START_DATE%></h5>
-          <h6>Number of friends invited:<h6>
+          <h6>Number of photos (<%=photos.length%>)<h6>
           </div>
-          <% if(user.id == trip.OWNER) { %>
-          <div align='center' class="large-2 columns">
-            <br />
-            <% var url = '/invite?tripid='+tripid; %>
-            <a href=<%=url%>><img style="width: 30%" src="/images/invite.png" /></a>
-          </div>
-          <% } %>
       </div>
     </div>
-    
     <br />
-    <div class="row">
-      <div class="large-12 columns">
-        <div class="large-3 columns">
-          <div class="panel">
-            <h5>Itinerary</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
-
-            <h5>Albums</h5>
-              <p><%var viewurl = '/albums?tripid='+tripid; %>
-                <a href=<%=viewurl%>>View Albums</a> <br />
-                New Album
-            </p>
-          </div>
-        </div>
-        <div class="large-6 columns">
-          <div class="panel">
-            <h5>Trip Updates</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
-          </div>
-        </div>
-        <div class="large-3 columns">
-          <div class="panel">
-            <h5>Going</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
-            <h5>Not Going</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
-            <h5>Pending</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
-          </div>
-        </div>
-      </div>
-    </div>  
+    
+    <%if(photos!='' && photos.length!=0) { %>
+    <div style="max-width: 80%" class = "row">
+      <div class = "large-12 columns">
+        <table>
+          <thead>
+            <tr>
+              <th>Photo </th>
+              <th>Tagline </th>
+              <th>Date </th>
+              <th>Likes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for(var i = 0 ; i < photos.length ; ++i) { %>
+              <tr>
+                <td width = '20%'><img src=<%=photos[i].URL%>></img></td>
+                <td width = '50%'><%=photos[i].TAGLINE%></td>
+                <td width = '15%'><%=photos[i].PIC_DATE%></td>
+                <td width = '15%'><%=photos[i].LIKES%></td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+    </div>
+    </div>
+    <% } %>
+    <table>
+    <% for(var i = 0 ; i < photos.length ; ++i) { %>
+    <tr>
+      <td><%=photos[i].PHOTO_ID%></td>
+    </tr>
+    <% } %>
+    </table>
+    
     
     <script src="/javascripts/vendor/jquery.js"></script>
     <script src="/javascripts/foundation.min.js"></script>

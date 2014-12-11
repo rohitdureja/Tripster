@@ -44,53 +44,27 @@
     <div class="row">
       <div class="large-12 columns">
         <div class="large-8 columns">
-          <h3><%=trip[0].NAME%></h3>
+          <h3><% var url = '/trip?id='+tripid; %><a href=<%=url%>><%=trip[0].NAME%></a></h3>
           <h5>Start Date: <%=trip[0].START_DATE%></h5>
-          <h6>Number of friends invited:<h6>
+          <h6>Number of albums (<%=albums.length%>)<h6>
           </div>
-          <% if(user.id == trip.OWNER) { %>
-          <div align='center' class="large-2 columns">
-            <br />
-            <% var url = '/invite?tripid='+tripid; %>
-            <a href=<%=url%>><img style="width: 30%" src="/images/invite.png" /></a>
-          </div>
-          <% } %>
       </div>
     </div>
-    
     <br />
-    <div class="row">
-      <div class="large-12 columns">
-        <div class="large-3 columns">
-          <div class="panel">
-            <h5>Itinerary</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
+    <%if(albums!='' && albums.length!=0) { %>
+    <div class = "row">
+      <div class = "large-4 columns">
+        <ul>
+          <% for(var i = 0 ; i < albums.length ; ++i) { %>
+              <li>
+                <% var url = '/album?tripid='+tripid+'&albumid='+albums[i].ID; %><a href=<%=url%>><%=albums[i].NAME%></a>
+              </li>
+            <% } %>
+        </ul>
 
-            <h5>Albums</h5>
-              <p><%var viewurl = '/albums?tripid='+tripid; %>
-                <a href=<%=viewurl%>>View Albums</a> <br />
-                New Album
-            </p>
-          </div>
-        </div>
-        <div class="large-6 columns">
-          <div class="panel">
-            <h5>Trip Updates</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
-          </div>
-        </div>
-        <div class="large-3 columns">
-          <div class="panel">
-            <h5>Going</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
-            <h5>Not Going</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
-            <h5>Pending</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
-          </div>
-        </div>
-      </div>
-    </div>  
+    </div>
+    </div>
+    <% } %>
     
     <script src="/javascripts/vendor/jquery.js"></script>
     <script src="/javascripts/foundation.min.js"></script>
