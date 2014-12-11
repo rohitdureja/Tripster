@@ -1,0 +1,8 @@
+/*for getting the photos like*/
+SELECT PHOTO_ID, 'LIKED' AS STATUS
+FROM PHOTOS_LIKES
+WHERE PHOTO_ID = 1000 AND USER_ID = 1000;
+
+/*for liking a photo*/
+INSERT INTO PHOTOS_LIKES VALUES (1001, 1000)
+
