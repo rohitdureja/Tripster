@@ -571,11 +571,92 @@ router.get('/album', function(req, res) {
 		}
 		photos = results;
 		console.log(photos);
-		res.render('album', {title: 'Content', user: req.user, trip: trip, tripid: tripid, photos: photos});
+		res.render('album', {title: 'Content', user: req.user, trip: trip, tripid: tripid, photos: photos, albumid: albumid});
 	});
 	});
 });
 
+
+// view a photo
+router.get('/photo', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var album;
+	var photo;
+	var comment;
+	var photoid = req.query.photoid;
+	var albumid = req.query.albumid;
+	var tripid = req.query.tripid;
+	console.log(photoid);
+	console.log(albumid);
+	console.log(tripid);
+	query = "SELECT A.NAME, A.ID, A.PRIVACY FROM ALBUMS A WHERE A.TRIP_ID="+tripid;
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		album = results;
+		console.log(album);
+		query = query = "SELECT P.ID AS PHOTO_ID, P.LIKES, to_char(P.PIC_DATE, 'MM/DD/YYYY') AS PIC_DATE, P.TAGLINE, P.URL \
+			FROM PHOTOS P \
+			WHERE P.ALBUM_ID = "+albumid+" AND P.ID = "+photoid;
+			conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		photo = results;
+		console.log(photo);
+		query = "SELECT PC.PHOTO_ID, U.FIRST_NAME, U.LAST_NAME, U.ID, PC.PHOTO_COMMENT, to_char(PC.COMMENT_DATE, 'MM/DD/YYYY') AS COMMENT_DATE FROM PHOTOS_COMMENTS PC \
+		INNER JOIN USERS U \
+		ON U.ID = PC.COMMENTER_ID \
+		WHERE PC.PHOTO_ID = "+photoid+" \
+		ORDER BY PC.COMMENT_DATE DESC";
+		console.log(query);
+		conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		comment = results;
+		console.log(comment);
+		res.render('photo', {title: 'Photo', user: req.user, album: album, photo: photo, tripid: tripid, comments: comment});
+	});
+	});
+	});
+});
+
+router.post('/addcomment', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var tripid = req.query.tripid;
+	var albumid = req.query.albumid;
+	var photoid = req.query.photoid;
+	var comment = req.body.comment;
+	console.log(comment);
+	query = "INSERT INTO PHOTOS_COMMENTS VALUES ("+photoid+", '"+comment+"', "+userid+", sysdate)";
+	console.log(query);
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		res.redirect('/photo?tripid='+tripid+'&albumid='+albumid+'&photoid='+photoid);
+	});
+});
 /*
 // Populate stormapth
 router.get('/populate', function(req, res) {

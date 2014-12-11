@@ -44,33 +44,47 @@
     <div class="row">
       <div class="large-12 columns">
         <div class="large-8 columns">
-          <h3><% var url = '/trip?id='+tripid; %><a href=<%=url%>><%=trip[0].NAME%></a></h3>
-          <h5>Start Date: <%=trip[0].START_DATE%></h5>
-          <h6>Number of photos (<%=photos.length%>)<h6>
+          <h3><% var url = '/album?tripid='+tripid+'&albumid='+album[0].ID; %><a href=<%=url%>><%=album[0].NAME%></a></h3>
           </div>
       </div>
     </div>
     <br />
-    
-    <%if(photos!='' && photos.length!=0) { %>
-    <div style="max-width: 80%" class = "row">
+
+    <div align='center' style="max-width: 80%" class = "row">      
       <div class = "large-12 columns">
-        <table>
+        <img src = <%=photo[0].URL%>></img>
+      </div>
+    </div>
+    <br />
+    <div align='center' style="max-width: 80%" class = "row">      
+      <div class = "large-12 columns">
+        Number of likes = <%=photo[0].LIKES%>
+      </div>
+    </div>
+    <div align='center' style="max-width: 80%" class = "row">      
+      <div class = "large-12 columns">
+        Like / Unlike
+      </div>
+    </div>
+
+    <br />
+    <%if(comments!='' && comments.length!=0) { %>
+    <div align='center' style="max-width: 80%" class = "row">   
+      <div class = "large-12 columns">
+        <table width="100%">
           <thead>
             <tr>
-              <th>Photo </th>
-              <th>Tagline </th>
-              <th>Date </th>
-              <th>Likes</th>
+              <th style="text-align: center">Commenter Name </th>
+              <th style="text-align: center">Comment </th>
+              <th style="text-align: center">Date </th>
             </tr>
           </thead>
           <tbody>
-            <% for(var i = 0 ; i < photos.length ; ++i) { %>
+            <% for(var i = 0 ; i < comments.length ; ++i) { %>
               <tr>
-                <td width = '20%'><% var url = '/photo?tripid='+tripid+'&albumid='+albumid+'&photoid='+photos[i].PHOTO_ID%><a href=<%=url%>><img src=<%=photos[i].URL%>></img></a></td>
-                <td width = '50%'><%=photos[i].TAGLINE%></td>
-                <td width = '15%'><%=photos[i].PIC_DATE%></td>
-                <td width = '15%'><%=photos[i].LIKES%></td>
+                <td style="text-align: center" width = '20%'><%=comments[i].FIRST_NAME!=null?comments[i].FIRST_NAME:''%> <%=comments[i].LAST_NAME!=null?comments[i].LAST_NAME:''%></th>
+                <td style="text-align: left" width = '60%'><%=comments[i].PHOTO_COMMENT%></th>
+                <td style="text-align: center" width = '20%'><%=comments[i].COMMENT_DATE%></th>
               </tr>
             <% } %>
           </tbody>
@@ -78,6 +92,23 @@
     </div>
     </div>
     <% } %>
+
+    <br />
+    <div align='center' style="max-width: 80%" class = "row">   
+      <div class = "large-12 columns">
+        <% var url = '/addcomment?tripid='+tripid+'&albumid='+album[0].ID+'&photoid='+photo[0].PHOTO_ID; %>
+        <form method='post' action=<%=url%>>
+        <div class="large-10 columns">
+          <input type='text' name='comment' placeholder='Enter your comment here'>
+        </div>
+        <div class="large-2 columns">
+          <input type = 'submit' value='Submit Comment'>
+        </div>
+      </form>
+    </div>
+    </div>
+
+    <br />
     
     
     <script src="/javascripts/vendor/jquery.js"></script>
