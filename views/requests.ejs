@@ -57,7 +57,7 @@
           <tbody>
             <% for(var i = 0 ; i < user_requests.length ; ++i) { %>
               <tr>
-                <td><%=user_requests[i].FIRST_NAME%></td>
+                <td><%=user_requests[i].FIRST_NAME!=null?user_requests[i].FIRST_NAME:''%> <%=user_requests[i].LAST_NAME!=null?user_requests[i].LAST_NAME:''%></td>
                 <td><%=user_requests[i].EMAIL%></td>
                 <td><%=user_requests[i].USERNAME%></td>
                 <td style="text-align: center" width = '20%'><% if(user_requests[i].STATUS == 'Pending') { 
@@ -68,6 +68,40 @@
                   <% } else { %>
                     <%=user_requests[i].STATUS%>
                     <% } %>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+    </div>
+    </div>
+    <% } %>
+
+    <%if(trip_requests!='' && trip_requests.length!=0) { %>
+    <div class = "row">
+      <div class = "large-12 columns">
+        <table width="100%">
+          <thead>
+            <tr>
+              <th>Name </th>
+              <th>Type </th>
+              <th>Owner </th>
+              <th>Start Date</th>
+              <th>Accept?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for(var i = 0 ; i < trip_requests.length ; ++i) { %>
+              <tr>
+                <td><%=trip_requests[i].NAME%></td>
+                <td><%=trip_requests[i].TRIP_TYPE%></td>
+                <td><%=trip_requests[i].FIRST_NAME!=null?trip_requests[i].FIRST_NAME:''%> <%=trip_requests[i].LAST_NAME!=null?trip_requests[i].LAST_NAME:''%></td>
+                <td><%=trip_requests[i].START_DATE%></td>
+                <td style="text-align: center" width = '20%'>
+                  <% var accepturl = '/invitetrip?accept=yes&tripid='+trip_requests[i].TRIP_ID;
+                    var rejecturl = '/invitetrip?accept=no&tripid='+trip_requests[i].TRIP_ID; %>
+                  <a href= <%=accepturl%>><img width = '20px'src="\images\tick.png" /></a>
+                  <a href= <%=rejecturl%>><img width = '15px'src="\images\cross.png" /></a>
                 </td>
               </tr>
             <% } %>

@@ -41,6 +41,7 @@ router.get('/', function(req, res) {
 // User home page, once logged in
 router.get('/home', function(req, res) {
 	var mytrips;
+	var friends;
 	console.log(res.user);
 	if(!req.user || req.user.status !== 'ENABLED') {
 		error = 'Error: User not logged in!';
@@ -69,8 +70,18 @@ router.get('/home', function(req, res) {
 			}
 			mytrips=results;
 			console.log(mytrips);
-
-			res.render('home', {title: 'Home', user: req.user, mytrips: mytrips});
+			query = "SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.LAST_NAME, U.EMAIL, F.STATUS AS STATUS FROM FRIENDS F, USERS U WHERE F.STATUS = 'Accepted' AND ((F.USER_ID1 = U.ID AND F.USER_ID2 = "+userid+") OR (F.USER_ID2 = U.ID AND F.USER_ID1 = "+userid+"))";
+			console.log(query);
+			conn.execute(query, [], function(err, results) {
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				return;
+			}
+			friends = results;
+			console.log(friends);
+			res.render('home', {title: 'Home', user: req.user, mytrips: mytrips, friends: friends});
+		});
 		});
 	});
 
@@ -298,13 +309,15 @@ router.get('/request', function(req, res) {
 	}
 });
 
+// Display all friend and trip requests
 router.get('/requests', function(req, res) {
 	if(!req.user || req.user.status !== 'ENABLED') {
 		error = 'Error: User not logged in!';
 		res.redirect('/');
 	}
 	var user_requests;
-	query = "SELECT U.ID, U.FIRST_NAME, U.EMAIL, U.USERNAME, F.STATUS \
+	var trip_requests;
+	query = "SELECT U.ID, U.FIRST_NAME, U.LAST_NAME, U.EMAIL, U.USERNAME, F.STATUS \
 	FROM USERS U \
 	INNER JOIN FRIENDS F \
 	ON F.USER_ID1 = U.ID \
@@ -322,8 +335,51 @@ router.get('/requests', function(req, res) {
 			{
 				console.log(user_requests[i].ID + " " + user_requests[i].USERNAME);
 			}
-			res.render('requests', {title: 'Requests', user: req.user, user_requests: user_requests});
+			query = "SELECT TU.TRIP_ID, T.NAME, U.FIRST_NAME, U.LAST_NAME, U.ID, to_char(T.START_DATE, 'MM/DD/YYYY') AS START_DATE, T.END_DATE, T.TRIP_TYPE \
+			FROM TRIPS_USERS TU \
+			INNER JOIN TRIPS T \
+			ON T.ID = TU.TRIP_ID \
+			INNER JOIN USERS U \
+			ON TU.USER_ID_REQUEST = U.ID \
+			WHERE TU.USER_ID = "+userid+" AND \
+			TU.STATUS = 'Pending'";
+			console.log(query);
+			conn.execute(query, [], function(err, results) {
+				if(err) {
+					console.log('Error executing query: ', err);
+					res.send('There was a problem querying the databases');
+					//TODO: delete from stormpath also!
+					return;
+				}
+				trip_request = results;
+				console.log(trip_request);
+				res.render('requests', {title: 'Requests', user: req.user, user_requests: user_requests, trip_requests: trip_request});
+			});
 		});
+});
+
+// Accept/Reject trip requests
+router.get('/invitetrip', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var accept = req.query.accept;
+	var tripid = req.query.tripid;
+	if(accept=='yes')
+		query = "UPDATE TRIPS_USERS TU SET TU.STATUS = 'Accepted' WHERE TU.USER_ID = "+userid+" AND TU.TRIP_ID = "+tripid;
+	else
+		query = "UPDATE TRIPS_USERS TU SET TU.STATUS = 'Rejected' WHERE TU.USER_ID = "+userid+" AND TU.TRIP_ID = "+tripid;
+	console.log(query);
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		res.redirect('/trip?id='+tripid);
+	});
 });
 
 // Create trip form
@@ -373,7 +429,7 @@ router.get('/trip', function(req, res) {
 	}
 	var trip;
 	var tripid = req.query.id;
-	query = "SELECT NAME, to_char(START_DATE, 'MM/DD/YYYY') AS START_DATE FROM TRIPS WHERE ID="+tripid;
+	query = "SELECT NAME, to_char(START_DATE, 'MM/DD/YYYY') AS START_DATE, OWNER FROM TRIPS WHERE ID="+tripid;
 	console.log(query);
 	conn.execute(query, [], function(err, results) {
 		if(err) {
@@ -384,14 +440,142 @@ router.get('/trip', function(req, res) {
 		}
 		trip = results;
 		console.log(trip);
-		res.render('trip', {title: 'Trip', user: req.user, trip: trip});
+		res.render('trip', {title: 'Trip', user: req.user, trip: trip, tripid: tripid});
 	});
 });
 
 // Invite friends to trips
 router.get('/invite', function(req, res) {
-
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var tripid = req.query.tripid;
+	console.log(tripid);
+	query = "WITH USER_FRIENDS_INVITED AS ( \
+		SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, TU.STATUS \
+		FROM USERS U \
+		INNER JOIN TRIPS_USERS TU \
+		ON U.ID = TU.USER_ID \
+		WHERE TU.USER_ID_REQUEST = "+userid+" \
+		AND TU.TRIP_ID = "+tripid+" \
+		), \
+		USER_FRIENDS AS ( \
+			SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, 'Not Invited' as STATUS \
+			FROM FRIENDS F, USERS U \
+			WHERE \
+			F.STATUS = 'Accepted' AND \
+			((F.USER_ID1 = U.ID AND F.USER_ID2 = "+userid+") \
+				OR (F.USER_ID2 = U.ID AND F.USER_ID1 = "+userid+")) AND \
+				U.ID NOT IN (SELECT ID FROM USER_FRIENDS_INVITED)) \
+				SELECT * FROM USER_FRIENDS_INVITED \
+				UNION \
+				SELECT * FROM USER_FRIENDS";
+	console.log(query);
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		console.log(results);
+		var friend_status = results;
+		res.render('invite', {title: 'Invite', user: req.user, friend_status: friend_status, tripid: tripid});
+	});
 });
+
+router.get('/tripinvite', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var inviteduser = req.query.user;
+	var tripid = req.query.tripid;
+	query = "INSERT INTO TRIPS_USERS VALUES ('"+inviteduser+"', '"+tripid+"', NULL, 'Pending', '"+userid+"')";
+	console.log(query);
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		res.redirect('/trip?id='+tripid);
+	});
+});
+
+// view albums
+router.get('/albums', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var tripid = req.query.tripid;
+	var albums;
+	console.log(tripid);
+	
+	// get trip details
+	query = "SELECT NAME, to_char(START_DATE, 'MM/DD/YYYY') AS START_DATE, OWNER FROM TRIPS WHERE ID="+tripid;
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		trip = results;
+		console.log(trip);
+		query = "SELECT A.NAME, A.ID, A.PRIVACY FROM ALBUMS A WHERE A.TRIP_ID="+tripid;
+		conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		albums = results;
+		console.log(results);
+		res.render('albums', {title: 'Trip', user: req.user, trip: trip, tripid: tripid, albums: albums});
+	});
+	});
+});
+
+//view a single album
+router.get('/album', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var tripid = req.query.tripid;
+	var albumid = req.query.albumid;
+	var photos;
+	query = "SELECT NAME, to_char(START_DATE, 'MM/DD/YYYY') AS START_DATE, OWNER FROM TRIPS WHERE ID="+tripid;
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		trip = results;
+		query = "SELECT P.ID AS PHOTO_ID, P.LIKES, to_char(P.PIC_DATE, 'MM/DD/YYYY') AS PIC_DATE, P.TAGLINE, P.URL \
+			FROM PHOTOS P \
+			WHERE P.ALBUM_ID = "+albumid+"ORDER BY P.PIC_DATE DESC";
+		conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		photos = results;
+		console.log(photos);
+		res.render('album', {title: 'Content', user: req.user, trip: trip, tripid: tripid, photos: photos});
+	});
+	});
+});
+
 /*
 // Populate stormapth
 router.get('/populate', function(req, res) {

@@ -1,0 +1,90 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tripster | <%=title %></title>
+    <link rel="stylesheet" href="/stylesheets/foundation.css" />
+    <link rel="stylesheet" href="/stylesheets/searchpage.css" />
+    <script src="javascripts/vendor/modernizr.js"></script>
+  </head>
+  <body>
+    <div class ="sticky">
+      <nav class="top-bar" data-topbar role="navigation" data-options="sticky_on: large">
+        <ul class="title-area">
+          <li class="name">
+            <h1><a href="http://localhost:3000"><img src="/images/tripster_logo.png" /></a></h1>
+          </li>
+        </ul>
+        <section class="top-bar-section">
+          <ul class="right">
+            <li><a href="\logout">Logout</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\requests">Requests</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\createtrip">New Trip</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\profile"><%= user.givenName%></a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\home">Home</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\search"><img src="/images/search.png" /></a></li>
+          </ul>
+        </section>
+      </nav>
+    </div>
+
+    <br />
+    <br />
+    
+    
+    <%if(friend_status!='' && friend_status.length!=0) { %>
+    <div class = "row">
+      <div class = "large-12 columns">
+        <table width="100%">
+          <thead>
+            <tr>
+              <th>Name </th>
+              <th>Email </th>
+              <th>Username </th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for(var i = 0 ; i < friend_status.length ; ++i) { %>
+              <tr>
+                <td><%=friend_status[i].FIRST_NAME!=null?friend_status[i].FIRST_NAME:''%> <%=friend_status[i].LAST_NAME!=null?friend_status[i].LAST_NAME:''%></td>
+                <td><%=friend_status[i].EMAIL%></td>
+                <td><%=friend_status[i].USERNAME%></td>
+                <td style='text-align: center'><% if(friend_status[i].STATUS != 'Not Invited') { %>
+                  <%=friend_status[i].STATUS%>
+                  <% } 
+                  else { 
+                    var url = '/tripinvite?user='+friend_status[i].ID+'&tripid='+tripid;  %> 
+                    <a href=<%=url%>>Invite</a>
+                    <% } %>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+    </div>
+    </div>
+    <% } %>
+
+  
+
+    <script src="/javascripts/vendor/jquery.js"></script>
+    <script src="/javascripts/foundation.min.js"></script>
+    <script src="/javascripts/foundation/foundation.reveal.js"></script>
+    <script src="javascripts/parsley.min.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
+  </body>
+</html>

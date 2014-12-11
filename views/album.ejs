@@ -30,7 +30,7 @@
             <li><a href="\profile"><%= user.givenName%></a></li>
           </ul>
           <ul class="right">
-            <li class="active"><a href="\home">Home</a></li>
+            <li><a href="\home">Home</a></li>
           </ul>
           <ul class="right">
             <li class="\search"><a href="\search"><img src="/images/search.png" /></a></li>
@@ -39,47 +39,53 @@
       </nav>
     </div>
 
-    <!--<h1> Welcome <%= user.givenName %> <%=user.surname %> <%=user.id %></h1>-->
     <br />
+    <!--<h1> Welcome <%= user.givenName %> <%=user.surname %> <%=user.id %></h1>-->
     <div class="row">
       <div class="large-12 columns">
-        <div class="large-3 columns">
-          <div class="panel">
-            <h5>My Trips</h5>
-             <p>
-              <table style="width: 100%">
-                <% for(var i = 0 ; i < mytrips.length ; ++i) { 
-                  var url = "/trip?id="+mytrips[i].ID;
-                %>
-                <tr>
-                  <td style="text-align: left" width = '80%'><a href=<%=url%>><%=mytrips[i].NAME%></a></td>
-                  <td style="text-align: right" width = '20%'><date><%=mytrips[i].START_DATE%></date></td>
-                </tr>
-                <% } %>
-              </table>
-             </p>
-            <h5>All Trips</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
+        <div class="large-8 columns">
+          <h3><% var url = '/trip?id='+tripid; %><a href=<%=url%>><%=trip[0].NAME%></a></h3>
+          <h5>Start Date: <%=trip[0].START_DATE%></h5>
+          <h6>Number of photos (<%=photos.length%>)<h6>
           </div>
-        </div>
-        <div class="large-6 columns">
-          <div class="panel">
-            <h5>Newsfeed</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
-          </div>
-        </div>
-        <div class="large-3 columns">
-          <div class="panel">
-            <h5>Friends (<%=friends.length%>)</h5>
-              <ul>
-                <% for(var i = 0 ; i < friends.length ; ++i) { %>
-                <li><%=friends[i].FIRST_NAME!=null?friends[i].FIRST_NAME:''%> <%=friends[i].LAST_NAME!=null?friends[i].LAST_NAME:''%></li>
-                <% } %>
-              </ul>
-          </div>
-        </div>
       </div>
-    </div>  
+    </div>
+    <br />
+    
+    <%if(photos!='' && photos.length!=0) { %>
+    <div style="max-width: 80%" class = "row">
+      <div class = "large-12 columns">
+        <table>
+          <thead>
+            <tr>
+              <th>Photo </th>
+              <th>Tagline </th>
+              <th>Date </th>
+              <th>Likes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% for(var i = 0 ; i < photos.length ; ++i) { %>
+              <tr>
+                <td width = '20%'><img src=<%=photos[i].URL%>></img></td>
+                <td width = '50%'><%=photos[i].TAGLINE%></td>
+                <td width = '15%'><%=photos[i].PIC_DATE%></td>
+                <td width = '15%'><%=photos[i].LIKES%></td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+    </div>
+    </div>
+    <% } %>
+    <table>
+    <% for(var i = 0 ; i < photos.length ; ++i) { %>
+    <tr>
+      <td><%=photos[i].PHOTO_ID%></td>
+    </tr>
+    <% } %>
+    </table>
+    
     
     <script src="/javascripts/vendor/jquery.js"></script>
     <script src="/javascripts/foundation.min.js"></script>
