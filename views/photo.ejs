@@ -52,18 +52,22 @@
 
     <div align='center' style="max-width: 80%" class = "row">      
       <div class = "large-12 columns">
-        <img src = <%=photo[0].URL%>></img>
+        <img src = <%=photos[0].URL%>></img>
       </div>
     </div>
     <br />
     <div align='center' style="max-width: 80%" class = "row">      
       <div class = "large-12 columns">
-        Number of likes = <%=photo[0].LIKES%>
+        Number of likes = <% if(photos[0].LIKE_COUNT == null) { %>0 <% } else { %><%=photos[0].LIKE_COUNT%><% } %>
       </div>
     </div>
     <div align='center' style="max-width: 80%" class = "row">      
       <div class = "large-12 columns">
-        Like / Unlike
+        <% if(photos[0].STATUS != 'LIKED') { 
+
+          var url = '/like?tripid='+tripid+'&albumid='+album[0].ID+'&photoid='+photos[0].ID;%>
+          <a href = <%=url%>><img width="2%" src="/images/like.png" /></a>
+          <% } %>
       </div>
     </div>
 
@@ -96,7 +100,7 @@
     <br />
     <div align='center' style="max-width: 80%" class = "row">   
       <div class = "large-12 columns">
-        <% var url = '/addcomment?tripid='+tripid+'&albumid='+album[0].ID+'&photoid='+photo[0].PHOTO_ID; %>
+        <% var url = '/addcomment?tripid='+tripid+'&albumid='+album[0].ID+'&photoid='+photos[0].ID; %>
         <form method='post' action=<%=url%>>
         <div class="large-10 columns">
           <input type='text' name='comment' placeholder='Enter your comment here'>

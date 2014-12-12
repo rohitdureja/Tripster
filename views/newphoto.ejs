@@ -1,0 +1,115 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tripster | <%=title %></title>
+    <link rel="stylesheet" href="/stylesheets/foundation.css" />
+    <link rel="stylesheet" href="/stylesheets/createtrip.css" />
+    <link rel="stylesheet" href="/stylesheets/pickadate.02.classic.css">
+    <script src="javascripts/vendor/modernizr.js"></script>
+  </head>
+  <body>
+    <div class ="sticky">
+      <nav class="top-bar" data-topbar role="navigation" data-options="sticky_on: large">
+        <ul class="title-area">
+          <li class="name">
+            <h1><a href="http://localhost:3000"><img src="/images/tripster_logo.png" /></a></h1>
+          </li>
+        </ul>
+        <section class="top-bar-section">
+          <ul class="right">
+            <li><a href="\logout">Logout</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\requests">Requests</a></li>
+          </ul>
+          <ul class="right">
+            <li class="active"><a href="\createtrip">Create Trip</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\profile"><%= user.givenName%></a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\home">Home</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\search"><img src="/images/search.png" /></a></li>
+          </ul>
+        </section>
+      </nav>
+    </div>
+
+    <br />
+    <br />
+    
+    <div class="row">
+      <div class="large-12 columns">
+        <div class="large-8 columns">
+          <h3><% var url = '/album?tripid='+tripid+'&albumid='+album[0].ID; %><a href=<%=url%>><%=album[0].NAME%></a></h3>
+          </div>
+      </div>
+    </div>
+
+    <br />
+    <%var url = '/addphoto?tripid='+tripid+'&albumid='+album[0].ID; %>
+  <form method='post' action=<%=url%> data-parsley-validate>
+      <div class="row">
+        <div class="large-12 columns">
+          <div class="row collapse">
+            <div class="small-2 columns">
+              <h3>Photo URL</h3>
+            </div>
+            <div class="small-10 columns">
+              <input type='text' name='photourl' placeholder='http://abc.com/xyz.jpg' />
+            </div>
+          </div>
+          <div class="row collapse">
+            <div class="small-2 columns">
+              <h3>Tagline</h3>
+            </div>
+            <div class="small-10 columns">
+              <input type='text' name='phototagline' placeholder='Nice photo' />
+              <!--<input type='text' name='type' placeholder='Adventure/Trekking/Festival'/ data-parsley-required="true" data-parsley-maxlength="30" data-parsley-minlength="5" data-parsley-trigger="change">-->
+            </div>
+          </div>
+          <div class="row collapse">
+            <div class="small-2 columns">
+              <h3>Privacy?</h3>
+            </div>
+            <div class="small-10 columns">
+              <select name="photoprivacy">
+                <option value="public">Public</option>
+                <option value="private">Private</option>
+              </select>
+              <!--<input type='text' name='privacy' data-parsley-required="true"/>-->
+            </div>
+          </div>
+          <br />
+          <div class = "row">
+          <div align="center" class="small-12 columns">
+            <input type="submit" value="Add Photo" class="radius button">      
+          </div>
+        </div>
+        </div>
+      </div>
+    </form>
+
+    <br />
+    
+  
+
+    <script src="/javascripts/vendor/jquery.js"></script>
+    <script src="/javascripts/foundation.min.js"></script>
+    <script src="/javascripts/foundation/foundation.reveal.js"></script>
+    <script src="/javascripts/parsley.min.js"></script>
+    <script src="/javascripts/rainbow.js"></script>
+    <script src="/javascripts/pickadate.legacy.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
+    <script type="text/javascript">
+        $( '[type=date], .datepicker' ).pickadate()
+    </script>
+  </body>
+</html>
