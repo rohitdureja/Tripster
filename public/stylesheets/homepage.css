@@ -167,4 +167,13 @@ button.alert, .button.alert {
 
 table {border: none;}
 
+.verticalLine {
+    border-bottom: thin solid #0A4A07;
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
 
+.boldverticalLine {
+    border-bottom: thick solid #0A4A07;
+
+}

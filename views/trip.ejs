@@ -76,18 +76,31 @@
         </div>
         <div class="large-6 columns">
           <div class="panel">
-            <h5>Trip Updates</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
-          </div>
+            <div class="boldverticalLine">
+              <h5>Trip Updates</h5>
+            </div>
+            <% for(var i = 0 ; i < tripfeed.length ; ++i) { %>
+            <div class="verticalLine">
+              A new <% if(tripfeed[i].CONTENT_TYPE == 'Photo') { %>photo <% } else { %> video <%} %>was added on <%=tripfeed[i].DISPLAY_CONTENT_DATE %> <br />
+              <% var url = '/photo?tripid='+tripid+'&albumid='+tripfeed[i].ALBUM_ID+'&photoid='+tripfeed[i].ID; %>
+              <a href=<%=url%>><img width='50%' src = <%=tripfeed[i].URL%>> </img></a>
+              <i><%=tripfeed[i].TAGLINE%></i>
+              <br />
+              <br />
+            </div>
+          
+            <% } %>
+            </div>
         </div>
         <div class="large-3 columns">
           <div class="panel">
             <h5>Going</h5>
               <p>It has an easy to override visual style, and is appropriately subdued.</p>
-            <h5>Not Going</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
             <h5>Pending</h5>
               <p>It has an easy to override visual style, and is appropriately subdued.</p>
+            <h5>Not Going</h5>
+              <p>It has an easy to override visual style, and is appropriately subdued.</p>
+            
           </div>
         </div>
       </div>

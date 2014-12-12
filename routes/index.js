@@ -428,6 +428,7 @@ router.get('/trip', function(req, res) {
 		res.redirect('/');
 	}
 	var trip;
+	var tripfeed;
 	var tripid = req.query.id;
 	query = "SELECT NAME, to_char(START_DATE, 'MM/DD/YYYY') AS START_DATE, OWNER FROM TRIPS WHERE ID="+tripid;
 	console.log(query);
@@ -440,7 +441,56 @@ router.get('/trip', function(req, res) {
 		}
 		trip = results;
 		console.log(trip);
-		res.render('trip', {title: 'Trip', user: req.user, trip: trip, tripid: tripid});
+		query = "WITH PIC_LIKES AS (SELECT PHOTO_ID, COUNT(*) AS LIKES \
+			FROM PHOTOS_LIKES PL \
+			INNER JOIN PHOTOS P \
+			ON PL.PHOTO_ID = P.ID \
+			INNER JOIN ALBUMS A \
+			ON A.ID = P.ALBUM_ID \
+			WHERE A.TRIP_ID = "+tripid+" \
+			GROUP BY PHOTO_ID), \
+			VID_LIKES AS (SELECT VIDEO_ID, COUNT(*) AS LIKES \
+			FROM VIDEOS_LIKES VL \
+			INNER JOIN VIDEOS V \
+			ON VL.VIDEO_ID = V.ID \
+			INNER JOIN ALBUMS A \
+			ON A.ID = V.ALBUM_ID \
+			WHERE A.TRIP_ID = "+tripid+" \
+			GROUP BY VIDEO_ID), \
+			PICS AS (SELECT P.ID, P.ALBUM_ID AS ALBUM_ID, PL.LIKES, to_char(P.PIC_DATE, 'MM/DD/YYYY') AS DISPLAY_CONTENT_DATE, P.PIC_DATE AS CONTENT_DATE, P.TAGLINE, P.URL, 'Photo' AS CONTENT_TYPE \
+			FROM PHOTOS P \
+			INNER JOIN ALBUMS A \
+			ON P.ALBUM_ID = A.ID \
+			LEFT OUTER JOIN \
+			PIC_LIKES PL \
+			ON PL.PHOTO_ID = P.ID \
+			WHERE A.TRIP_ID = "+tripid+" \
+			ORDER BY P.PIC_DATE DESC), \
+			VIDS AS ( \
+			SELECT V.ID, V.ALBUM_ID AS ALBUM_ID, VL.LIKES, to_char(V.VIDEO_DATE , 'MM/DD/YYYY') AS DISPLAY_CONTENT_DATE, V.VIDEO_DATE AS CONTENT_DATE, V.TAGLINE, V.URL, 'Video' AS CONTENT_TYPE \
+			FROM VIDEOS V \
+			INNER JOIN ALBUMS A \
+			ON V.ALBUM_ID = A.ID \
+			LEFT OUTER JOIN \
+			VID_LIKES VL \
+			ON VL.VIDEO_ID = V.ID \
+			WHERE A.TRIP_ID = "+tripid+" \
+			ORDER BY V.VIDEO_DATE DESC \
+			) \
+			SELECT ID, ALBUM_ID, LIKES, DISPLAY_CONTENT_DATE, CONTENT_DATE, TAGLINE, URL, CONTENT_TYPE \
+			FROM PICS UNION SELECT * FROM VIDS \
+			ORDER BY CONTENT_DATE DESC";
+		conn.execute(query, [], function(err, results) {
+			if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			//TODO: delete from stormpath also!
+			return;
+		}
+		tripfeed = results;
+		console.log(tripfeed);
+		res.render('trip', {title: 'Trip', user: req.user, trip: trip, tripid: tripid, tripfeed: tripfeed});
+	});
 	});
 });
 
@@ -551,6 +601,7 @@ router.get('/album', function(req, res) {
 	var albumid = req.query.albumid;
 	var photos;
 	query = "SELECT NAME, to_char(START_DATE, 'MM/DD/YYYY') AS START_DATE, OWNER FROM TRIPS WHERE ID="+tripid;
+	console.log(query);
 	conn.execute(query, [], function(err, results) {
 		if(err) {
 			console.log('Error executing query: ', err);
@@ -592,6 +643,7 @@ router.get('/album', function(req, res) {
 		ORDER BY V.VIDEO_DATE DESC \
 		) \
 		SELECT * FROM PICS UNION SELECT * FROM VIDS";
+		console.log(query);
 		conn.execute(query, [], function(err, results) {
 		if(err) {
 			console.log('Error executing query: ', err);
@@ -809,7 +861,7 @@ router.post('/addphoto', function(req, res) {
 			//TODO: delete from stormpath also!
 			return;
 		}
-		res.redirect('/album?=tripid'+tripid+'&albumid='+albumid);
+		res.redirect('/album?tripid='+tripid+'&albumid='+albumid);
 	});
 });
 
