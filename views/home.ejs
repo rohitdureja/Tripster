@@ -64,8 +64,31 @@
         </div>
         <div class="large-6 columns">
           <div class="panel">
-            <h5>Newsfeed</h5>
-              <p>It has an easy to override visual style, and is appropriately subdued.</p>
+            <div class="boldverticalLine">
+              <h5>Newsfeed</h5>
+            </div>
+            <% for(var i = 0 ; i < newsfeed.length ; ++i) { %>
+            <div class="verticalLine">
+              
+              <% var names = newsfeed[i].USER_NAMES;
+              var array = names.split(","); %>
+              A new <%if(newsfeed[i].CONTENT_TYPE=='Photo') { %>photo<% } else { %>video<% } %> was added on <i><%=newsfeed[i].DISPLAY_CONTENT_DATE%></i> to the album <b><%=newsfeed[i].ALBUM_NAME%></b> of the trip <b><%=newsfeed[i].TRIP_NAME%></b>.
+              <br />
+              <img width='50%' src = <%=newsfeed[i].CONTENT_URL%>> </img>
+              <i><%=newsfeed[i].TAGLINE%></i>
+              <br />
+              Members in the trip you know: <b>
+              <% for(var j = 0 ; j < array.length - 1; j++) { %>
+                <%=array[j]%>, 
+              <% } if(j==array.length-1) { %>
+                 <%=array[j]%>
+              <% } %>
+
+            </b>
+              <br />
+            </div>
+          
+            <% } %>
           </div>
         </div>
         <div class="large-3 columns">

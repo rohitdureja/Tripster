@@ -42,6 +42,7 @@ router.get('/', function(req, res) {
 router.get('/home', function(req, res) {
 	var mytrips;
 	var friends;
+	var newsfeed;
 	console.log(res.user);
 	if(!req.user || req.user.status !== 'ENABLED') {
 		error = 'Error: User not logged in!';
@@ -80,7 +81,74 @@ router.get('/home', function(req, res) {
 			}
 			friends = results;
 			console.log(friends);
-			res.render('home', {title: 'Home', user: req.user, mytrips: mytrips, friends: friends});
+			query = "WITH CURRENT_USERS_FRIENDS AS ( \
+				SELECT U.ID AS USER_ID, U.USERNAME AS USERNAME, U.FIRST_NAME AS FIRST_NAME, U.EMAIL AS EMAIL, F.STATUS AS STATUS \
+				FROM FRIENDS F, USERS U \
+				WHERE \
+				F.STATUS = 'Accepted' AND \
+				((F.USER_ID1 = U.ID AND F.USER_ID2 = "+userid+") \
+				OR (F.USER_ID2 = U.ID AND F.USER_ID1 = "+userid+")) \
+				), \
+				PIC_LIKES AS (SELECT PHOTO_ID, COUNT(*) AS LIKES \
+				FROM PHOTOS_LIKES PL \
+				GROUP BY PHOTO_ID), \
+				VID_LIKES AS (SELECT VIDEO_ID, COUNT(*) AS LIKES \
+				FROM VIDEOS_LIKES VL \
+				GROUP BY VIDEO_ID), \
+				VIDS AS ( \
+				SELECT V.ID AS ID, VL.LIKES AS LIKES, to_char(V.VIDEO_DATE , 'MM/DD/YYYY') AS DISPLAY_CONTENT_DATE, V.VIDEO_DATE AS CONTENT_DATE, V.TAGLINE AS TAGLINE, A.NAME AS ALBUM_NAME, T.NAME AS TRIP_NAME, V.URL AS CONTENT_URL, 'Video' AS CONTENT_TYPE, LISTAGG(CUF.FIRST_NAME, ',' ) WITHIN GROUP (ORDER BY V.ID) AS USER_NAMES \
+				FROM VIDEOS V \
+				INNER JOIN ALBUMS A \
+				ON V.ALBUM_ID = A.ID \
+				INNER JOIN TRIPS T \
+				ON T.ID = A.TRIP_ID \
+				INNER JOIN TRIPS_USERS TU \
+				ON TU.TRIP_ID = T.ID \
+				INNER JOIN CURRENT_USERS_FRIENDS CUF \
+				ON CUF.USER_ID = TU.USER_ID \
+				LEFT OUTER JOIN \
+				VID_LIKES VL \
+				ON VL.VIDEO_ID = V.ID \
+				WHERE V.PRIVACY = 1 AND \
+				A.PRIVACY = 1 AND \
+				T.PRIVACY = 1 \
+				GROUP BY V.ID, VL.LIKES, V.VIDEO_DATE, V.TAGLINE, A.NAME, T.NAME, V.URL \
+				ORDER BY V.VIDEO_DATE DESC), \
+				PICS AS ( \
+				SELECT P.ID AS ID, PL.LIKES AS LIKES, to_char(P.PIC_DATE, 'MM/DD/YYYY') AS DISPLAY_CONTENT_DATE, P.PIC_DATE AS CONTENT_DATE, P.TAGLINE AS TAGLINE, A.NAME AS ALBUM_NAME, T.NAME AS TRIP_NAME, P.URL AS CONTENT_URL, 'Photo' AS CONTENT_TYPE, LISTAGG(CUF.FIRST_NAME, ',' ) WITHIN GROUP (ORDER BY P.ID) AS USER_NAMES \
+				FROM PHOTOS P \
+				INNER JOIN ALBUMS A \
+				ON P.ALBUM_ID = A.ID \
+				INNER JOIN TRIPS T \
+				ON T.ID = A.TRIP_ID \
+				INNER JOIN TRIPS_USERS TU \
+				ON TU.TRIP_ID = T.ID \
+				INNER JOIN CURRENT_USERS_FRIENDS CUF \
+				ON CUF.USER_ID = TU.USER_ID \
+				LEFT OUTER JOIN \
+				PIC_LIKES PL \
+				ON PL.PHOTO_ID = P.ID \
+				WHERE P.PRIVACY = 1 AND \
+				A.PRIVACY = 1 AND \
+				T.PRIVACY = 1 \
+				GROUP BY P.ID, PL.LIKES, P.PIC_DATE, P.TAGLINE, A.NAME, T.NAME, P.URL \
+				ORDER BY P.PIC_DATE DESC) \
+				SELECT ID, LIKES, DISPLAY_CONTENT_DATE, CONTENT_DATE, TAGLINE, ALBUM_NAME, TRIP_NAME, CONTENT_URL, CONTENT_TYPE, USER_NAMES \
+				FROM PICS \
+				UNION \
+				SELECT ID, LIKES, DISPLAY_CONTENT_DATE, CONTENT_DATE, TAGLINE, ALBUM_NAME, TRIP_NAME, CONTENT_URL, CONTENT_TYPE, USER_NAMES \
+				FROM VIDS \
+				ORDER BY CONTENT_DATE DESC";
+				conn.execute(query, [], function(err, results) {
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				return;
+			}
+			newsfeed = results;
+			console.log(newsfeed);
+			res.render('home', {title: 'Home', user: req.user, mytrips: mytrips, friends: friends, newsfeed: newsfeed});
+		});
 		});
 		});
 	});
@@ -402,15 +470,34 @@ router.post('/createtrip', function(req, res) {
 	var startdate = req.body.startdate;
 	var enddate = req.body.enddate;
 	var privacy = req.body.privacy=='public'?1:0;
+	var tripid;
 
 	console.log(tripname);
 	console.log(type);
 	console.log(startdate);
 	console.log(enddate);
 	console.log(privacy);
-	query = "INSERT INTO TRIPS VALUES (TRIPID_SEQ.NEXTVAL,'"+tripname+"','"+startdate+"','"+enddate+"','"+privacy+"','"+type+"',"+userid+")";
-	console.log(query);
-	conn.execute(query, [], function(err, results) {
+	query = "SELECT last_number FROM user_sequences WHERE sequence_name = 'TRIPID_SEQ'";
+			conn.execute(query, [], function(err, results) {
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				//TODO: delete from stormpath also!
+				return;
+			}
+			tripid = results[0].LAST_NUMBER;
+			console.log(tripid);
+			query = "INSERT INTO TRIPS VALUES (TRIPID_SEQ.NEXTVAL,'"+tripname+"','"+startdate+"','"+enddate+"','"+privacy+"','"+type+"',"+userid+")";
+			console.log(query);
+			conn.execute(query, [], function(err, results) {
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				//TODO: delete from stormpath also!
+				return;
+			}
+			query = "INSERT INTO TRIPS_USERS VALUES ("+userid+","+tripid+", NULL, 'Owner', "+userid+")";
+			conn.execute(query, [], function(err, results) {
 			if(err) {
 				console.log('Error executing query: ', err);
 				res.send('There was a problem querying the databases');
@@ -418,6 +505,8 @@ router.post('/createtrip', function(req, res) {
 				return;
 			}
 			res.redirect('/home');
+		});
+		});
 		});
 });
 
