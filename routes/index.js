@@ -22,6 +22,32 @@ oracle.connect(connectData, function(err, connection) {
 	conn=connection;
 });
 
+//Set up mongoDB
+var Db = require('mongodb').Db,
+ MongoClient = require('mongodb').MongoClient,
+ Server = require('mongodb').Server,
+ ReplSetServers = require('mongodb').ReplSetServers,
+ ObjectID = require('mongodb').ObjectID,
+ Binary = require('mongodb').Binary,
+ GridStore = require('mongodb').GridStore,
+ Grid = require('mongodb').Grid,
+ Code = require('mongodb').Code,
+ BSON = require('mongodb').pure().BSON,
+ assert = require('assert');
+
+var mongodb_conn;
+var requestdb = require('request');
+
+MongoClient.connect('mongodb://127.0.0.1:27017/test', function(err, mongodb) {
+	if(err) {
+		console.log("Error connecting to mongodb: ", err);
+	    return;
+	}
+	console.log('connected to mongodb');
+	mongodb_conn = mongodb;
+});
+
+
 var error = '';	// variable for error messages.
 var query = ''; // variable to form sql queries.
 
@@ -787,6 +813,7 @@ router.get('/photo', function(req, res) {
 	var album;
 	var photos;
 	var comment;
+	var photoData;
 	var photoid = req.query.photoid;
 	var albumid = req.query.albumid;
 	var tripid = req.query.tripid;
@@ -804,52 +831,88 @@ router.get('/photo', function(req, res) {
 		album = results;
 		console.log(album);
 		query = "WITH LIKE_COUNT AS ( \
-		SELECT PHOTO_ID, COUNT(*) AS LIKE_COUNT \
-		FROM PHOTOS_LIKES \
-		WHERE PHOTO_ID = "+photoid+" \
-		GROUP BY PHOTO_ID), \
-		STATUS AS ( \
-		SELECT PHOTO_ID, 'LIKED' AS STATUS \
-		FROM PHOTOS_LIKES PL \
-		WHERE PHOTO_ID = "+photoid+" AND USER_ID = "+userid+"), \
-		PIC AS ( \
-		SELECT P.ID, P.URL \
-		FROM PHOTOS P \
-		WHERE P.ID = "+photoid+" ) \
-		SELECT P.ID, P.URL, LC.LIKE_COUNT, S.STATUS \
-		FROM PIC P \
-		LEFT OUTER JOIN LIKE_COUNT LC \
-		ON P.ID = LC.PHOTO_ID \
-		LEFT OUTER JOIN STATUS S \
-		ON LC.PHOTO_ID = S.PHOTO_ID";
-	console.log(query);
-			conn.execute(query, [], function(err, results) {
-		if(err) {
-			console.log('Error executing query: ', err);
-			res.send('There was a problem querying the databases');
-			//TODO: delete from stormpath also!
-			return;
-		}
-		photos = results;
-		console.log(photos);
-		query = "SELECT PC.PHOTO_ID, U.FIRST_NAME, U.LAST_NAME, U.ID, PC.PHOTO_COMMENT, to_char(PC.COMMENT_DATE, 'MM/DD/YYYY') AS COMMENT_DATE FROM PHOTOS_COMMENTS PC \
-		INNER JOIN USERS U \
-		ON U.ID = PC.COMMENTER_ID \
-		WHERE PC.PHOTO_ID = "+photoid+" \
-		ORDER BY PC.COMMENT_DATE DESC";
+			SELECT PHOTO_ID, COUNT(*) AS LIKE_COUNT \
+			FROM PHOTOS_LIKES \
+			WHERE PHOTO_ID = "+photoid+" \
+			GROUP BY PHOTO_ID), \
+			STATUS AS ( \
+			SELECT PHOTO_ID, 'LIKED' AS STATUS \
+			FROM PHOTOS_LIKES PL \
+			WHERE PHOTO_ID = "+photoid+" AND USER_ID = "+userid+"), \
+			PIC AS ( \
+			SELECT P.ID, P.URL \
+			FROM PHOTOS P \
+			WHERE P.ID = "+photoid+" ) \
+			SELECT P.ID, P.URL, LC.LIKE_COUNT, S.STATUS \
+			FROM PIC P \
+			LEFT OUTER JOIN LIKE_COUNT LC \
+			ON P.ID = LC.PHOTO_ID \
+			LEFT OUTER JOIN STATUS S \
+			ON LC.PHOTO_ID = S.PHOTO_ID";
 		console.log(query);
 		conn.execute(query, [], function(err, results) {
-		if(err) {
-			console.log('Error executing query: ', err);
-			res.send('There was a problem querying the databases');
-			//TODO: delete from stormpath also!
-			return;
-		}
-		comment = results;
-		console.log(comment);
-		res.render('photo', {title: 'Photo', user: req.user, album: album, photos: photos, tripid: tripid, comments: comment});
-	});
-	});
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				//TODO: delete from stormpath also!
+				return;
+			}
+			photos = results;
+			console.log(photos);
+			//Needs to talk to cache here
+			//Right now, photo clicks are not being counted, every pic is being cached in binary format
+			//When reuqested for, the binary data is being converted to base64 data is being served
+			//Once the basic photo display works, we need to send jpg/fig/png in addition to base64 data
+			fname = photos[0].ID+'.txt';
+			GridStore.exist(mongodb_conn,fname,function(err,result){
+				assert.equal(null, err);
+				if(result == true){
+					console.log('The file exists');
+					GridStore.read(mongodb_conn, fname, function(err,fileData){
+						photoData = fileData.toString('base64');
+						//console.log(photoData);
+					});
+					//router.use(express.static('/Users/sibiv/Downloads/'));
+				}else{
+					console.log('The file doesnt exist');
+					var gridStore = new GridStore(mongodb_conn,fname,'w');
+					gridStore.open(function(err,gridStore){
+						assert.equal(null, err);
+						requestdb(photos[0].URL, function (error, response, body) {
+					    	var image = new Buffer(body, 'binary');
+					    	photoData = image.toString('base64');
+					    	//console.log(photoData);
+						    // Write some data to the file
+						    gridStore.write(image, function(err, gridStore) {
+						      	assert.equal(null, err);
+						      	// Close (Flushes the data to MongoDB)
+						      	gridStore.close(function(err, result) {
+						        	assert.equal(null, err);
+						        });
+						    });
+						});
+					});
+				}
+			});
+
+			query = "SELECT PC.PHOTO_ID, U.FIRST_NAME, U.LAST_NAME, U.ID, PC.PHOTO_COMMENT, to_char(PC.COMMENT_DATE, 'MM/DD/YYYY') AS COMMENT_DATE FROM PHOTOS_COMMENTS PC \
+				INNER JOIN USERS U \
+				ON U.ID = PC.COMMENTER_ID \
+				WHERE PC.PHOTO_ID = "+photoid+" \
+				ORDER BY PC.COMMENT_DATE DESC";
+			console.log(query);
+			conn.execute(query, [], function(err, results) {
+				if(err) {
+					console.log('Error executing query: ', err);
+					res.send('There was a problem querying the databases');
+					//TODO: delete from stormpath also!
+					return;
+				}
+				comment = results;
+				console.log(comment);
+				res.render('photo', {title: 'Photo', user: req.user, album: album, photos: photos, tripid: tripid, comments: comment, photoData: photoData});
+			});
+		});
 	});
 });
 
