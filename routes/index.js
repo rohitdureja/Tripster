@@ -571,15 +571,45 @@ router.get('/trip', function(req, res) {
 			ORDER BY CONTENT_DATE DESC";
 		conn.execute(query, [], function(err, results) {
 			if(err) {
-			console.log('Error executing query: ', err);
-			res.send('There was a problem querying the databases');
-			//TODO: delete from stormpath also!
-			return;
-		}
-		tripfeed = results;
-		console.log(tripfeed);
-		res.render('trip', {title: 'Trip', user: req.user, trip: trip, tripid: tripid, tripfeed: tripfeed});
-	});
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				//TODO: delete from stormpath also!
+				return;
+			}
+			tripfeed = results;
+			console.log(tripfeed);
+			query = "WITH USER_FRIENDS_INVITED AS ( \
+				SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, TU.STATUS \
+				FROM USERS U \
+				INNER JOIN TRIPS_USERS TU \
+				ON U.ID = TU.USER_ID \
+				WHERE TU.USER_ID_REQUEST = "+userid+" \
+				AND TU.TRIP_ID = "+tripid+" \
+				), \
+				USER_FRIENDS AS ( \
+					SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, 'Not Invited' as STATUS \
+					FROM FRIENDS F, USERS U \
+					WHERE \
+					F.STATUS = 'Accepted' AND \
+					((F.USER_ID1 = U.ID AND F.USER_ID2 = "+userid+") \
+						OR (F.USER_ID2 = U.ID AND F.USER_ID1 = "+userid+")) AND \
+						U.ID NOT IN (SELECT ID FROM USER_FRIENDS_INVITED)) \
+						SELECT * FROM USER_FRIENDS_INVITED \
+						UNION \
+						SELECT * FROM USER_FRIENDS";
+			console.log(query);
+			conn.execute(query, [], function(err, results) {
+				if(err) {
+					console.log('Error executing query: ', err);
+					res.send('There was a problem querying the databases');
+					//TODO: delete from stormpath also!
+					return;
+				}
+				console.log(results);
+				var friend_status = results;
+				res.render('trip', {title: 'Trip', user: req.user, trip: trip, tripid: tripid, tripfeed: tripfeed, friend_status: friend_status});
+			});
+		});
 	});
 });
 
