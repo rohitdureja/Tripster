@@ -46,7 +46,7 @@
         <div class="large-8 columns">
           <h3><%=trip[0].NAME%></h3>
           <h5>Start Date: <%=trip[0].START_DATE%></h5>
-          <h6>Number of friends invited:<h6>
+          <h6>Number of friends invited: (<%=friend_status.length%>)<h6>
           </div>
           <% if(user.id == trip.OWNER) { %>
           <div align='center' class="large-2 columns">

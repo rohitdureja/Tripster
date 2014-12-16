@@ -395,7 +395,7 @@ router.post('/search', function(req, res) {
 		UNION \
 		SELECT * FROM CURRENT_USERS_FRIENDS" 
 		console.log(query);
-
+		console.log('Search start: ' + new Date()/1000);
 		conn.execute(query, [], function(err, results) {
 			if(err) {
 				console.log('Error executing query: ', err);
@@ -439,7 +439,7 @@ router.post('/search', function(req, res) {
 						trips[i].END_DATE + " " + trips[i].LOCATION);
 				}
 				//res.send(trips);
-
+				console.log('Search end: ' + new Date()/1000);
 				res.render('search', {title:'Search', user:req.user, users: users, trips: trips, bingresults: '', yelpresults: ''});
 			});
 		});
