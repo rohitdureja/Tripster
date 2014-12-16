@@ -34,7 +34,7 @@ oracle.connect(connectData, function(err, connection) {
 });
 
 //Set up mongoDB
-/*var Db = require('mongodb').Db,
+var Db = require('mongodb').Db,
  MongoClient = require('mongodb').MongoClient,
  Server = require('mongodb').Server,
  ReplSetServers = require('mongodb').ReplSetServers,
@@ -48,15 +48,16 @@ oracle.connect(connectData, function(err, connection) {
 
 var mongodb_conn;
 var requestdb = require('request');
+var http = require('http');
 
-MongoClient.connect('mongodb://127.0.0.1:27017/test', function(err, mongodb) {
+MongoClient.connect('mongodb://127.0.0.1:27017/newdb', function(err, mongodb) {
 	if(err) {
 		console.log("Error connecting to mongodb: ", err);
 	    return;
 	}
 	console.log('connected to mongodb');
 	mongodb_conn = mongodb;
-});*/
+});
 
 
 var error = '';	// variable for error messages.
@@ -456,7 +457,7 @@ router.post('/search', function(req, res) {
 	else if(search_type == 'yelp') {
 		yelp.search({term: "food", limit: 20, sort: 2, location: search_string}, function(error, data) {
   		console.log(error);
-  		if(error.statusCode != 400)
+  		if(error == null || error.statusCode != 400)
   		{
   			console.log(data.businesses);
 	  		yelpresults = data.businesses;
@@ -1117,41 +1118,6 @@ router.get('/photo', function(req, res) {
 			}
 			photos = results;
 			console.log(photos);
-			//Needs to talk to cache here
-			//Right now, photo clicks are not being counted, every pic is being cached in binary format
-			//When reuqested for, the binary data is being converted to base64 data is being served
-			//Once the basic photo display works, we need to send jpg/fig/png in addition to base64 data
-			fname = photos[0].ID+'.txt';
-			GridStore.exist(mongodb_conn,fname,function(err,result){
-				assert.equal(null, err);
-				if(result == true){
-					console.log('The file exists');
-					GridStore.read(mongodb_conn, fname, function(err,fileData){
-						photoData = fileData.toString('base64');
-						//console.log(photoData);
-					});
-					//router.use(express.static('/Users/sibiv/Downloads/'));
-				}else{
-					console.log('The file doesnt exist');
-					var gridStore = new GridStore(mongodb_conn,fname,'w');
-					gridStore.open(function(err,gridStore){
-						assert.equal(null, err);
-						requestdb(photos[0].URL, function (error, response, body) {
-					    	var image = new Buffer(body, 'binary');
-					    	photoData = image.toString('base64');
-					    	//console.log(photoData);
-						    // Write some data to the file
-						    gridStore.write(image, function(err, gridStore) {
-						      	assert.equal(null, err);
-						      	// Close (Flushes the data to MongoDB)
-						      	gridStore.close(function(err, result) {
-						        	assert.equal(null, err);
-						        });
-						    });
-						});
-					});
-				}
-			});
 
 			query = "SELECT PC.PHOTO_ID, U.FIRST_NAME, U.LAST_NAME, U.ID, PC.PHOTO_COMMENT, to_char(PC.COMMENT_DATE, 'MM/DD/YYYY') AS COMMENT_DATE FROM PHOTOS_COMMENTS PC \
 				INNER JOIN USERS U \
@@ -1168,11 +1134,53 @@ router.get('/photo', function(req, res) {
 				}
 				comment = results;
 				console.log(comment);
-				res.render('photo', {title: 'Photo', user: req.user, album: album, photos: photos, tripid: tripid, comments: comment, photoData: photoData});
+
+				fname = photos[0].ID+'.txt';
+				GridStore.exist(mongodb_conn,fname,function(err,result){
+					assert.equal(null, err);
+					if(result == true){
+						console.log('The file exists');
+						GridStore.read(mongodb_conn, fname, function(err,fileData){
+							var urlString = fileData.toString('base64');
+							photoData = "data:image/jpg;base64,"+urlString;
+							res.render('photo', {title: 'Photo', user: req.user, album: album, photos: photos, tripid: tripid, comments: comment, photoData: photoData});
+						});
+					}else{
+						console.log('The file doesnt exist');
+						var gridStore = new GridStore(mongodb_conn,fname,'w');
+						gridStore.open(function(err,gridStore){
+							assert.equal(null, err);
+							http.get(photos[0].URL, function (response) {
+				    	  		response.setEncoding('binary');
+				    	  		var image2 = '';
+				    	  		console.log('reading data in chunks first');
+				    	  		response.on('data', function(chunk){
+				    	  	        image2 += chunk;
+				        	  		console.log('reading data');
+				    	  	    });
+				    	  		response.on('end', function() {
+				        	  		console.log('done reading data');
+				                    image = new Buffer(image2,"binary");
+				                    var urlString = image.toString('base64');
+				                    photoData = "data:image/jpg;base64,"+urlString;
+				                    res.render('photo', {title: 'Photo', user: req.user, album: album, photos: photos, tripid: tripid, comments: comment, photoData: photoData});
+							    	gridStore.write(image, function(err, gridStore) {
+							      		assert.equal(null, err);
+								      	// Close (Flushes the data to MongoDB)
+								      	gridStore.close(function(err, result) {
+								        	assert.equal(null, err);
+								        });
+							        });
+							    });
+							});
+						});
+					}
+				});
 			});
 		});
 	});
 });
+
 
 router.post('/addcomment', function(req, res) {
 	if(!req.user || req.user.status !== 'ENABLED') {
