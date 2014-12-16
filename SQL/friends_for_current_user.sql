@@ -4,3 +4,11 @@ WHERE
 F.STATUS = 'Accepted' AND
 ((F.USER_ID1 = U.ID AND F.USER_ID2 = 1001) /*Replace number with current users user id*/
 OR (F.USER_ID2 = U.ID AND F.USER_ID1 = 1001)) /*Replace number with current users user id*/
+
+SELECT *
+  FROM user_sequences
+ WHERE sequence_name = 'TRIPID_SEQ';
+ 
+DROP SEQUENCE s1;
+
+CREATE SEQUENCE TRIPID_SEQ START WITH 1200 INCREMENT BY 1 NOCACHE;
