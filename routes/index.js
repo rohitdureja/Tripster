@@ -82,6 +82,7 @@ router.get('/home', function(req, res) {
 	var newsfeed;
 	var recommendations;
 	var friendrec;
+	var alltrips;
 	console.log(res.user);
 	if(!req.user || req.user.status !== 'ENABLED') {
 		error = 'Error: User not logged in!';
@@ -215,37 +216,52 @@ router.get('/home', function(req, res) {
 			recommendations = results;
 			console.log(recommendations);
 			query = "WITH USERS_FRIENDS AS ( \
-SELECT U.ID \
-FROM FRIENDS F, USERS U \
-WHERE \
-F.STATUS = 'Accepted' AND \
-((F.USER_ID1 = U.ID AND F.USER_ID2 = "+userid+") \
-OR (F.USER_ID2 = U.ID AND F.USER_ID1 = "+userid+")) \
-), \
-FRIENDS_OF_FRIENDS AS ( \
-SELECT FF.ID \
-FROM FRIENDS F, USERS U, USERS FF \
-WHERE \
-F.STATUS = 'Accepted' AND \
-((F.USER_ID1 = FF.ID AND F.USER_ID2 = U.ID) \
-OR (F.USER_ID2 = FF.ID AND F.USER_ID1 = U.ID)) \
-AND U.ID IN \
-(SELECT ID FROM USERS_FRIENDS) \
-) \
-SELECT DISTINCT FF.ID, U.FIRST_NAME, U.LAST_NAME \
-FROM FRIENDS_OF_FRIENDS FF \
-INNER JOIN USERS U \
-ON U.ID = FF.ID \
-WHERE FF.ID NOT IN \
-(SELECT ID FROM USERS_FRIENDS)";
-conn.execute(query, [], function(err, results) {
-			if(err) {
-				console.log('Error executing query: ', err);
-				res.send('There was a problem querying the databases');
-				return;
-			}
-			friendrec = results;
-			res.render('home', {title: 'Home', user: req.user, mytrips: mytrips, friends: friends, newsfeed: newsfeed, recommendations: recommendations, friendrec: friendrec});
+					SELECT U.ID \
+					FROM FRIENDS F, USERS U \
+					WHERE \
+					F.STATUS = 'Accepted' AND \
+					((F.USER_ID1 = U.ID AND F.USER_ID2 = "+userid+") \
+					OR (F.USER_ID2 = U.ID AND F.USER_ID1 = "+userid+")) \
+					), \
+					FRIENDS_OF_FRIENDS AS ( \
+					SELECT FF.ID \
+					FROM FRIENDS F, USERS U, USERS FF \
+					WHERE \
+					F.STATUS = 'Accepted' AND \
+					((F.USER_ID1 = FF.ID AND F.USER_ID2 = U.ID) \
+					OR (F.USER_ID2 = FF.ID AND F.USER_ID1 = U.ID)) \
+					AND U.ID IN \
+					(SELECT ID FROM USERS_FRIENDS) \
+					) \
+					SELECT DISTINCT FF.ID, U.FIRST_NAME, U.LAST_NAME \
+					FROM FRIENDS_OF_FRIENDS FF \
+					INNER JOIN USERS U \
+					ON U.ID = FF.ID \
+					WHERE FF.ID NOT IN \
+					(SELECT ID FROM USERS_FRIENDS)";
+				conn.execute(query, [], function(err, results) {
+					if(err) {
+						console.log('Error executing query: ', err);
+						res.send('There was a problem querying the databases');
+						return;
+					}
+					friendrec = results;
+					query = "SELECT T.ID, T.NAME, to_char(T.START_DATE, 'MM/DD/YYYY') AS START_DATE \
+						FROM TRIPS_USERS TU \
+						INNER JOIN TRIPS T \
+						ON T.ID = TU.TRIP_ID \
+						WHERE TU.USER_ID = "+userid+" \
+						AND TU.STATUS LIKE 'Accepted'";
+						conn.execute(query, [], function(err, results) {
+					if(err) {
+						console.log('Error executing query: ', err);
+						res.send('There was a problem querying the databases');
+						return;
+					}
+					alltrips = results;
+					console.log(alltrips);
+			res.render('home', {title: 'Home', user: req.user, mytrips: mytrips, friends: friends, newsfeed: newsfeed, recommendations: recommendations, friendrec: friendrec, alltrips: alltrips});
+		});
 		});
 		});
 		});
@@ -759,7 +775,17 @@ router.post('/createtrip', function(req, res) {
 				//TODO: delete from stormpath also!
 				return;
 			}
+			query = "INSERT INTO TRIPS_LOCATIONS VALUES("+location+","+tripid+")";
+			console.log(query);
+			conn.execute(query, [], function(err, results) {
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				//TODO: delete from stormpath also!
+				return;
+			}
 			res.redirect('/home');
+		});
 		});
 		});
 		});
