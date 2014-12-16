@@ -47,7 +47,14 @@
           <div class="panel">
             <h5>My Trips</h5>
              <p>
+              <% if(mytrips.length == 0) { %> 
+              No trips to display
+              <% } else { %>
               <table style="width: 100%">
+                <thead>
+                  <th style="text-align: left" width = '80%'> Trip Name </th>
+                  <th style="text-align: center" width = '20%'> Date </th>
+                </thead>
                 <% for(var i = 0 ; i < mytrips.length ; ++i) { 
                   var url = "/trip?id="+mytrips[i].ID;
                 %>
@@ -57,9 +64,30 @@
                 </tr>
                 <% } %>
               </table>
+              <% } %>
              </p>
             <h5>All Trips</h5>
               <p>It has an easy to override visual style, and is appropriately subdued.</p>
+            <h5>Recommended Trips</h5>
+            <p>
+              <% if(recommendations.length==0) { %> 
+              No recommendations
+              <% } else { %>
+
+              <table style="width: 100%">
+                <thead>
+                  <th style="text-align: left" width = '60%'> Trip Name </th>
+                  <th style="text-align: center" width = '40%'> Owner </th>
+                </thead>
+                <% for(var i = 0 ; i < recommendations.length ; ++i) { %>
+                <tr>
+                  <td style="text-align: left" width = '60%'><%=recommendations[i].NAME%></td>
+                  <td style="text-align: center" width = '40%'><date><%=recommendations[i].FIRST_NAME!=null?recommendations[i].FIRST_NAME:''%> <%=recommendations[i].LAST_NAME!=null?recommendations[i].LAST_NAME:''%></date></td>
+                </tr>
+                <% } %>
+              </table>
+              <% } %>
+            </p>
           </div>
         </div>
         <div class="large-6 columns">
@@ -99,6 +127,18 @@
                 <li><%=friends[i].FIRST_NAME!=null?friends[i].FIRST_NAME:''%> <%=friends[i].LAST_NAME!=null?friends[i].LAST_NAME:''%></li>
                 <% } %>
               </ul>
+              <h5>People you may know</h5>
+              <p>
+                <% if(friendrec.length == 0) { %>
+                No suggestions at this time.
+                <% } else { %>
+                <ul>
+                  <% for(var i = 0 ; i < friendrec.length ; ++i) { %>
+                  <li><%=friendrec[i].FIRST_NAME!=null?friendrec[i].FIRST_NAME:''%> <%=friendrec[i].LAST_NAME!=null?friendrec[i].LAST_NAME:''%></li>
+                  <% } %>
+                </ul>
+                <% } %>
+              </p>
           </div>
         </div>
       </div>

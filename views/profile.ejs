@@ -1,0 +1,107 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tripster | <%=title %></title>
+    <link rel="stylesheet" href="/stylesheets/foundation.css" />
+    <link rel="stylesheet" href="/stylesheets/homepage.css" />
+    <script src="javascripts/vendor/modernizr.js"></script>
+  </head>
+  <body>
+    <div class ="sticky">
+      <nav class="top-bar" data-topbar role="navigation" data-options="sticky_on: large">
+        <ul class="title-area">
+          <li class="name">
+            <h1><a href="http://localhost:3000"><img src="/images/tripster_logo.png" /></a></h1>
+          </li>
+        </ul>
+        <section class="top-bar-section">
+          <ul class="right">
+            <li><a href="\logout">Logout</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\requests">Requests</a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\createtrip">New Trip</a></li>
+          </ul>
+          <ul class="right">
+            <li class="active"><a href="\profile"><%= user.givenName%></a></li>
+          </ul>
+          <ul class="right">
+            <li><a href="\home">Home</a></li>
+          </ul>
+          <ul class="right">
+            <li class="\search"><a href="\search"><img src="/images/search.png" /></a></li>
+          </ul>
+        </section>
+      </nav>
+    </div>
+    <br />
+    <div class = "row">
+      <div class = "large-12 columns">
+        <div class = "large-3 columns">
+          <div class = "panel">
+            <div class = "boldverticalLine">
+            <h5><%=profile_user[0].FIRST_NAME%>'s Trips</h5>
+          </div>
+          </div>
+        </div>
+        <div class = "large-6 columns">
+          <div class = "panel">
+            <div class = "boldverticalLine">
+              <h5><%=profile_user[0].FIRST_NAME%>'s Personal Information 
+                <% if(userid == profile_user[0].ID) { %>
+                <a href="/editprofile">(Edit)</a>
+                <% } %>
+              </h5>
+            </div>
+                <br />
+                <table style="width: 100%">
+                <tr>
+                  <td style="text-align: left" width = '50%'><b>First Name</b></td>
+                  <td style="text-align: left" width = '50%'><%=profile_user[0].FIRST_NAME%></td>
+                </tr>
+                <tr>
+                  <td style="text-align: left" width = '50%'><b>Last Name</b></td>
+                  <td style="text-align: left" width = '50%'><%=profile_user[0].LAST_NAME%></td>
+                </tr>
+                <tr>
+                  <td style="text-align: left" width = '50%'><b>Dream Locations</b></td>
+                  <td style="text-align: left" width = '50%'><% if(dreamlocations.length==0) { %>No dream locations<% } else { %><ul><%for(var i = 0 ; i < dreamlocations.length ; ++i) { %>
+                    <li><%=dreamlocations[i].NAME%></li>
+                    <% } %>
+                    <% } %></ul></td>
+                </tr>
+              </table>
+          </div>
+        </div>
+        <div class = "large-3 columns">
+          <div class = "panel">
+            <div class = "boldverticalLine">
+            <h5><%=profile_user[0].FIRST_NAME%>'s Friends</h5>
+            </div>
+            <br />
+              <ul>
+                <% for(var i = 0 ; i < friends.length ; ++i) { %>
+                <% var url = '/profile?uid='+friends[i].ID %>
+                <li><a href=<%=url%>><%=friends[i].FIRST_NAME!=null?friends[i].FIRST_NAME:''%> <%=friends[i].LAST_NAME!=null?friends[i].LAST_NAME:''%></a></li>
+                <% } %>
+              </ul>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    
+    <script src="/javascripts/vendor/jquery.js"></script>
+    <script src="/javascripts/foundation.min.js"></script>
+    <script src="/javascripts/foundation/foundation.reveal.js"></script>
+    <script src="javascripts/parsley.min.js"></script>
+    <script>
+      $(document).foundation();
+    </script>
+  </body>
+</html>

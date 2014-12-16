@@ -23,7 +23,7 @@ oracle.connect(connectData, function(err, connection) {
 });
 
 //Set up mongoDB
-var Db = require('mongodb').Db,
+/*var Db = require('mongodb').Db,
  MongoClient = require('mongodb').MongoClient,
  Server = require('mongodb').Server,
  ReplSetServers = require('mongodb').ReplSetServers,
@@ -45,7 +45,7 @@ MongoClient.connect('mongodb://127.0.0.1:27017/test', function(err, mongodb) {
 	}
 	console.log('connected to mongodb');
 	mongodb_conn = mongodb;
-});
+});*/
 
 
 var error = '';	// variable for error messages.
@@ -69,6 +69,8 @@ router.get('/home', function(req, res) {
 	var mytrips;
 	var friends;
 	var newsfeed;
+	var recommendations;
+	var friendrec;
 	console.log(res.user);
 	if(!req.user || req.user.status !== 'ENABLED') {
 		error = 'Error: User not logged in!';
@@ -173,7 +175,68 @@ router.get('/home', function(req, res) {
 			}
 			newsfeed = results;
 			console.log(newsfeed);
-			res.render('home', {title: 'Home', user: req.user, mytrips: mytrips, friends: friends, newsfeed: newsfeed});
+			query = "WITH USER_TRIP_TYPES AS ( \
+						SELECT DISTINCT T.TRIP_TYPE \
+						FROM TRIPS_USERS TU \
+						INNER JOIN TRIPS T \
+						ON T.ID = TU.TRIP_ID \
+						WHERE TU.USER_ID = "+userid+" \
+						) \
+						SELECT DISTINCT T.ID, T.NAME, U.FIRST_NAME, U.LAST_NAME, T.TRIP_TYPE \
+						FROM TRIPS T \
+						INNER JOIN TRIPS_USERS TU \
+						ON TU.TRIP_ID = T.ID \
+						INNER JOIN USERS U \
+						ON U.ID = T.OWNER \
+						WHERE T.TRIP_TYPE IN \
+						(SELECT TRIP_TYPE FROM USER_TRIP_TYPES) \
+						AND T.PRIVACY = 1 \
+						AND TU.TRIP_ID NOT IN \
+						(SELECT TU.TRIP_ID \
+						FROM TRIPS_USERS TU \
+						WHERE TU.USER_ID = "+userid+")";
+				conn.execute(query, [], function(err, results) {
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				return;
+			}
+			recommendations = results;
+			console.log(recommendations);
+			query = "WITH USERS_FRIENDS AS ( \
+SELECT U.ID \
+FROM FRIENDS F, USERS U \
+WHERE \
+F.STATUS = 'Accepted' AND \
+((F.USER_ID1 = U.ID AND F.USER_ID2 = "+userid+") \
+OR (F.USER_ID2 = U.ID AND F.USER_ID1 = "+userid+")) \
+), \
+FRIENDS_OF_FRIENDS AS ( \
+SELECT FF.ID \
+FROM FRIENDS F, USERS U, USERS FF \
+WHERE \
+F.STATUS = 'Accepted' AND \
+((F.USER_ID1 = FF.ID AND F.USER_ID2 = U.ID) \
+OR (F.USER_ID2 = FF.ID AND F.USER_ID1 = U.ID)) \
+AND U.ID IN \
+(SELECT ID FROM USERS_FRIENDS) \
+) \
+SELECT DISTINCT FF.ID, U.FIRST_NAME, U.LAST_NAME \
+FROM FRIENDS_OF_FRIENDS FF \
+INNER JOIN USERS U \
+ON U.ID = FF.ID \
+WHERE FF.ID NOT IN \
+(SELECT ID FROM USERS_FRIENDS)";
+conn.execute(query, [], function(err, results) {
+			if(err) {
+				console.log('Error executing query: ', err);
+				res.send('There was a problem querying the databases');
+				return;
+			}
+			friendrec = results;
+			res.render('home', {title: 'Home', user: req.user, mytrips: mytrips, friends: friends, newsfeed: newsfeed, recommendations: recommendations, friendrec: friendrec});
+		});
+		});
 		});
 		});
 		});
@@ -352,7 +415,118 @@ router.post('/search', function(req, res) {
 
 // User profile
 router.get('/profile', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var profile_user;
+	var uid;
+	var dreamlocations;
+	var friends;
+	if(req.query.uid != null) {
+		uid = req.query.uid;
+		console.log(uid);
+		query = "select users.ID, users.FIRST_NAME, users.LAST_NAME from users where users.ID = "+uid;
+		console.log(query);
+	}
+	else {
+		query = "select users.ID, users.FIRST_NAME, users.LAST_NAME from users where users.USERNAME = '"+req.user.username+"'";
+		console.log(query);
+	}
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			return;
+		}
+		profile_user = results;
+		console.log(profile_user);
+		query = "SELECT DISTINCT L.ID, L.NAME \
+					FROM DREAM_LOCATIONS DL \
+					INNER JOIN LOCATIONS L ON DL.LOCATION_ID = L.ID \
+					WHERE DL.USER_ID = "+profile_user[0].ID;
+		console.log(query);
+		conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			return;
+		}
+		dreamlocations = results;
+		query = "SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.LAST_NAME, U.EMAIL, F.STATUS AS STATUS FROM FRIENDS F, USERS U WHERE F.STATUS = 'Accepted' AND ((F.USER_ID1 = U.ID AND F.USER_ID2 = "+profile_user[0].ID+") OR (F.USER_ID2 = U.ID AND F.USER_ID1 = "+profile_user[0].ID+"))";
+		conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			return;
+		}
+		friends = results;
+			res.render('profile', {title: 'Profile', user: req.user, profile_user: profile_user, userid: userid, dreamlocations: dreamlocations, friends: friends});
+		});
+	});
+	});
+});
 
+// edit user profile
+router.get('/editprofile', function(req, res) {
+	if(!req.user || req.user.status !== 'ENABLED') {
+		error = 'Error: User not logged in!';
+		res.redirect('/');
+	}
+	var locations;
+	query = "SELECT ID, NAME FROM LOCATIONS ORDER BY NAME";
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			return;
+		}
+		locations = results;
+		res.render('editprofile', {title: 'Edit', user: req.user, locations: locations});
+	});
+});
+
+// save profile changes
+router.post('/editprofile', function(req, res) {
+	var firstname = req.body.firstname;
+	var lastname = req.body.lastname;
+	var dream_location_1 = req.body.dream_location_1;
+	var dream_location_2 = req.body.dream_location_2;
+	console.log(firstname);
+	console.log(lastname);
+	console.log(dream_location_1);
+	console.log(dream_location_2);
+	query = "UPDATE USERS SET FIRST_NAME = '"+firstname+"',LAST_NAME = '"+lastname+"' WHERE ID = "+userid;
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			return;
+		}
+		if(dream_location_1!="") {
+			query = "INSERT INTO DREAM_LOCATIONS VALUES ("+userid+","+dream_location_1+")";
+			console.log(query);
+			conn.execute(query, [], function(err, results) {
+				if(err) {
+					console.log('Error executing query: ', err);
+					res.send('There was a problem querying the databases');
+					return;
+				}
+				if(dream_location_2 != "") {
+					query = "INSERT INTO DREAM_LOCATIONS VALUES ("+userid+","+dream_location_2+")";
+					console.log(query);
+				}
+				conn.execute(query, [], function(err, results) {
+					if(err) {
+						console.log('Error executing query: ', err);
+						res.send('There was a problem querying the databases');
+						return;
+					}
+					res.redirect('/profile');
+				});
+			});	
+		}
+	});
 });
 
 // Send, approve, reject friend requests and user requests
@@ -478,11 +652,23 @@ router.get('/invitetrip', function(req, res) {
 
 // Create trip form
 router.get('/createtrip', function(req, res) {
+	var locations;
 	if(!req.user || req.user.status !== 'ENABLED') {
 		error = 'Error: User not logged in!';
 		res.redirect('/');
 	}
-	res.render('createtrip', {title: 'Create', user:req.user});
+	console.log(new Date()/1000);
+	query = "SELECT ID, NAME FROM LOCATIONS ORDER BY NAME";
+	conn.execute(query, [], function(err, results) {
+		if(err) {
+			console.log('Error executing query: ', err);
+			res.send('There was a problem querying the databases');
+			return;
+		}
+		console.log(new Date()/1000);
+		locations = results;
+		res.render('createtrip', {title: 'Create', user:req.user, locations: locations});
+	});
 });
 
 // Create trip and add to database
@@ -496,6 +682,7 @@ router.post('/createtrip', function(req, res) {
 	var startdate = req.body.startdate;
 	var enddate = req.body.enddate;
 	var privacy = req.body.privacy=='public'?1:0;
+	var location = req.body.locations;
 	var tripid;
 
 	console.log(tripname);
@@ -503,6 +690,7 @@ router.post('/createtrip', function(req, res) {
 	console.log(startdate);
 	console.log(enddate);
 	console.log(privacy);
+	console.log(location);
 	query = "SELECT last_number FROM user_sequences WHERE sequence_name = 'TRIPID_SEQ'";
 			conn.execute(query, [], function(err, results) {
 			if(err) {
@@ -547,6 +735,7 @@ router.get('/trip', function(req, res) {
 	var tripid = req.query.id;
 	query = "SELECT NAME, to_char(START_DATE, 'MM/DD/YYYY') AS START_DATE, OWNER FROM TRIPS WHERE ID="+tripid;
 	console.log(query);
+	console.log(new Date()/1000);
 	conn.execute(query, [], function(err, results) {
 		if(err) {
 			console.log('Error executing query: ', err);
@@ -605,7 +794,7 @@ router.get('/trip', function(req, res) {
 			tripfeed = results;
 			console.log(tripfeed);
 			query = "WITH USER_FRIENDS_INVITED AS ( \
-				SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, TU.STATUS \
+				SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.LAST_NAME, U.EMAIL, TU.STATUS \
 				FROM USERS U \
 				INNER JOIN TRIPS_USERS TU \
 				ON U.ID = TU.USER_ID \
@@ -613,7 +802,7 @@ router.get('/trip', function(req, res) {
 				AND TU.TRIP_ID = "+tripid+" \
 				), \
 				USER_FRIENDS AS ( \
-					SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.EMAIL, 'Not Invited' as STATUS \
+					SELECT U.ID, U.USERNAME, U.FIRST_NAME, U.LAST_NAME, U.EMAIL, 'Not Invited' as STATUS \
 					FROM FRIENDS F, USERS U \
 					WHERE \
 					F.STATUS = 'Accepted' AND \
@@ -631,6 +820,7 @@ router.get('/trip', function(req, res) {
 					//TODO: delete from stormpath also!
 					return;
 				}
+				console.log(new Date()/1000);
 				console.log(results);
 				var friend_status = results;
 				res.render('trip', {title: 'Trip', user: req.user, trip: trip, tripid: tripid, tripfeed: tripfeed, friend_status: friend_status});
@@ -679,6 +869,7 @@ router.get('/invite', function(req, res) {
 		res.render('invite', {title: 'Invite', user: req.user, friend_status: friend_status, tripid: tripid});
 	});
 });
+
 
 router.get('/tripinvite', function(req, res) {
 	if(!req.user || req.user.status !== 'ENABLED') {

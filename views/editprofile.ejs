@@ -25,10 +25,10 @@
             <li><a href="\requests">Requests</a></li>
           </ul>
           <ul class="right">
-            <li class="active"><a href="\createtrip">Create Trip</a></li>
+            <li><a href="\createtrip">Create Trip</a></li>
           </ul>
           <ul class="right">
-            <li><a href="\profile"><%= user.givenName%></a></li>
+            <li class = "active"><a href="\profile"><%= user.givenName%></a></li>
           </ul>
           <ul class="right">
             <li><a href="\home">Home</a></li>
@@ -43,39 +43,32 @@
     <br />
     <br />
     
-    <form method='post' action='/createtrip' data-parsley-validate>
+    <form method='post' action='/editprofile' data-parsley-validate>
       <div class="row">
         <div class="large-12 columns">
           <div class="row collapse">
             <div class="small-2 columns">
-              <h3>Trip name?</h3>
+              <h3>First name?</h3>
             </div>
             <div class="small-10 columns">
-              <input type='text' name='tripname' placeholder='To the moon and back'/ data-parsley-required="true" data-parsley-maxlength="50" data-parsley-minlength="5" data-parsley-trigger="change">
+              <input type='text' name='firstname' placeholder='John'/ data-parsley-required="true" data-parsley-maxlength="50" data-parsley-minlength="5" data-parsley-trigger="change">
             </div>
           </div>
           <div class="row collapse">
             <div class="small-2 columns">
-              <h3>Type?</h3>
+              <h3>Last name?</h3>
             </div>
             <div class="small-10 columns">
-              <select name="type">
-                <option value="Adventure">Adventure</option>
-                <option value="Agriculture">Agriculture</option>
-                <option value="Bicycle tour">Bicycle tour</option>
-                <option value="Business">Business</option>
-                <option value="Cruise">Cruise</option>
-                <option value="Cultural">Cultural</option>
-              </select>
-              <!--<input type='text' name='type' placeholder='Adventure/Trekking/Festival'/ data-parsley-required="true" data-parsley-maxlength="30" data-parsley-minlength="5" data-parsley-trigger="change">-->
+              <input type='text' name='lastname' placeholder='Doe'/ data-parsley-required="true" data-parsley-maxlength="50" data-parsley-minlength="5" data-parsley-trigger="change">
             </div>
           </div>
           <div class="row collapse">
             <div class="small-2 columns">
-              <h3>Location?</h3>
+              <h3>Dream Location?</h3>
             </div>
             <div class="small-10 columns">
-              <select name="locations">
+              <select name="dream_location_1">
+                <option value="" style="display:none;"></option>
                 <% for(var i = 0 ; i < locations.length ; ++i) { %>
                 <option value=<%=locations[i].ID%>><%=locations[i].NAME%></option>
                 <% } %>
@@ -85,36 +78,22 @@
           </div>
           <div class="row collapse">
             <div class="small-2 columns">
-              <h3>Start date?</h3>
+              <h3>Dream Location?</h3>
             </div>
             <div class="small-10 columns">
-              <input type='text' class="datepicker" name='startdate' data-parsley-required="true"/>
-            </div>
-          </div>
-          <div class="row collapse">
-            <div class="small-2 columns">
-              <h3>End date?</h3>
-            </div>
-            <div class="small-10 columns">
-              <input type='text' class="datepicker" name='enddate' data-parsley-required="true"/>
-            </div>
-          </div>
-          <div class="row collapse">
-            <div class="small-2 columns">
-              <h3>Privacy?</h3>
-            </div>
-            <div class="small-10 columns">
-              <select name="privacy">
-                <option value="public">Public</option>
-                <option value="private">Private</option>
+              <select name="dream_location_2">
+                <option value="" style="display:none;"></option>
+                <% for(var i = 0 ; i < locations.length ; ++i) { %>
+                <option value=<%=locations[i].ID%>><%=locations[i].NAME%></option>
+                <% } %>
               </select>
-              <!--<input type='text' name='privacy' data-parsley-required="true"/>-->
+              <!--<input type='text' name='type' placeholder='Adventure/Trekking/Festival'/ data-parsley-required="true" data-parsley-maxlength="30" data-parsley-minlength="5" data-parsley-trigger="change">-->
             </div>
           </div>
           <br />
           <div class = "row">
           <div align="center" class="small-12 columns">
-            <input type="submit" value="Create Trip" class="radius button">      
+            <input type="submit" value="Update Profile" class="radius button">      
           </div>
         </div>
         </div>

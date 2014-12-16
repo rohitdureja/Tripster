@@ -96,27 +96,33 @@
           <div class="panel">
             <h5>Going</h5>
               <p>
+                <ul>
                 <%for (var i = 0 ; i < friend_status.length ; ++i) { %>
                   <%if(friend_status[i].STATUS == 'Accepted' || friend_status[i].STATUS == 'Owner') { %>
-                    <%=friend_status[i].USERNAME%>
+                    <li><%=friend_status[i].FIRST_NAME!=null?friend_status[i].FIRST_NAME:''%> <%=friend_status[i].LAST_NAME!=null?friend_status[i].LAST_NAME:''%></li>
                   <%}%>
                 <%}%>
+              </ul>
               </p>
             <h5>Pending</h5>
               <p>
+                <ul>
                 <%for (var i = 0 ; i < friend_status.length ; ++i) { %>
                   <%if(friend_status[i].STATUS == 'Pending') { %>
-                    <%=friend_status[i].USERNAME%>
+                    <li><%=friend_status[i].FIRST_NAME!=null?friend_status[i].FIRST_NAME:''%> <%=friend_status[i].LAST_NAME!=null?friend_status[i].LAST_NAME:''%></li>
                   <%}%>
                 <%}%>
+              </ul>
               </p>
             <h5>Not Going</h5>
               <p>
+                <ul>
                 <%for (var i = 0 ; i < friend_status.length ; ++i) { %>
                   <%if(friend_status[i].STATUS == 'Rejected') { %>
-                    <%=friend_status[i].USERNAME%>
+                    <li><%=friend_status[i].FIRST_NAME!=null?friend_status[i].FIRST_NAME:''%> <%=friend_status[i].LAST_NAME!=null?friend_status[i].LAST_NAME:''%></li>
                   <%}%>
                 <%}%>
+              </ul>
               </p>
             
           </div>
