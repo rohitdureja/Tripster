@@ -47,10 +47,17 @@
         <div class="large-12 columns">
           <div class="row collapse">
             <div class="small-10 columns">
-              <input type = "text" name="searchquery" placeholder="Search for users, trips or locations" data-parsley-required="true" data-parsley-trigger="change"/>
+              <input type = "text" name="searchquery" placeholder="Search for users, trips or locations or perform a bing/yelp search" data-parsley-required="true" data-parsley-trigger="change"/>
             </div>
             <div class = "small-2 columns">
               <input type="submit" class="button" value="Search"></input>
+            </div>
+          </div>
+          <div align = "center" class="row collapse">
+            <div class="small-10 columns">
+              <input type="radio" name="search" value="local" checked="checked"> Local</input>
+              <input type="radio" name="search" value="bing"> Bing</input>
+              <input type="radio" name="search" value="yelp"> Yelp</input>
             </div>
           </div>
         </div>
@@ -119,6 +126,33 @@
             <% } %>
           </tbody>
         </table>
+    </div>
+    </div>
+    <% } %>
+
+    <%if(bingresults!='' && bingresults.length!=0) { %>
+    <div class = "row">
+      <div class = "large-12 columns">
+        <% for(var i = 1 ; i < bingresults.length ; ++i) { %>
+        <div class = "panel">
+          <a href = <%=bingresults[i].Url%>><b><%=bingresults[i].Title%></b></a><br />
+          <%=bingresults[i].Description%><br />
+        </div>
+        <% } %>
+    </div>
+    </div>
+    <% } %>
+
+    <%if(yelpresults!='' && yelpresults.length!=0) { %>
+    <div class = "row">
+      <div class = "large-12 columns">
+        <% for(var i = 0 ; i < yelpresults.length ; ++i) { %>
+        <div class = "panel">
+          <a href = <%=yelpresults[i].url%>><b><%=yelpresults[i].name%></b></a><br />
+          <%=yelpresults[i].snippet_text%><br />
+          Contact: <%=yelpresults[i].display_phone%><br />
+        </div>
+        <% } %>
     </div>
     </div>
     <% } %>

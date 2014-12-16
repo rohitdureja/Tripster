@@ -39,7 +39,6 @@
       </nav>
     </div>
 
-    <h1> Welcome <%= user.givenName %> <%=user.surname %> <%=user.id %></h1>
     <br />
     <div class="row">
       <div class="large-12 columns">
@@ -124,7 +123,8 @@
             <h5>Friends (<%=friends.length%>)</h5>
               <ul>
                 <% for(var i = 0 ; i < friends.length ; ++i) { %>
-                <li><%=friends[i].FIRST_NAME!=null?friends[i].FIRST_NAME:''%> <%=friends[i].LAST_NAME!=null?friends[i].LAST_NAME:''%></li>
+                <% var url = '/profile?uid='+friends[i].ID %>
+                <li><a href=<%=url%>><%=friends[i].FIRST_NAME!=null?friends[i].FIRST_NAME:''%> <%=friends[i].LAST_NAME!=null?friends[i].LAST_NAME:''%></a></li>
                 <% } %>
               </ul>
               <h5>People you may know</h5>
@@ -134,7 +134,8 @@
                 <% } else { %>
                 <ul>
                   <% for(var i = 0 ; i < friendrec.length ; ++i) { %>
-                  <li><%=friendrec[i].FIRST_NAME!=null?friendrec[i].FIRST_NAME:''%> <%=friendrec[i].LAST_NAME!=null?friendrec[i].LAST_NAME:''%></li>
+                  <% var url = '/profile?uid='+friendrec[i].ID %>
+                  <li><a href=<%=url%>><%=friendrec[i].FIRST_NAME!=null?friendrec[i].FIRST_NAME:''%> <%=friendrec[i].LAST_NAME!=null?friendrec[i].LAST_NAME:''%></a></li>
                   <% } %>
                 </ul>
                 <% } %>
